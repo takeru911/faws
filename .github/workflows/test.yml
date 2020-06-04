@@ -13,9 +13,10 @@ jobs:
         with:
           python-version: 3.7
       - name: Setup Env
-        run |
+        run: |
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
-      - name Run Test
-        run: make test/all
+      - name: Run Test
+        run: |
+          make test/all
