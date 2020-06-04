@@ -1,9 +1,9 @@
 
 run/%:
-	export FLASK_APP=faws.$*.server && flask run
+	export FLASK_APP=faws.$*.server && poetry run flask run
 
 test/all:
-	pytest tests
+	poetry run pytest tests
 
 test/%:
-	pytest tests/$*
+	poetry run pytest tests/$*
