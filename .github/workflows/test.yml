@@ -9,13 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install
-        uses: abatilo/actions/poetry@v1.0.0
+        uses: abatilo/actions-poetry@v1.7.0
         with:
           python_version: 3.7.0
           poetry_version: 1.5.0
           args: install
       - name: Run test
-        uses: abatilo/actions/poetry@v1.0.0
+        uses: abatilo/actions-poetry@v1.7.0
         with:
           python_version: 3.7.0
           poetry_version: 1.5.0
