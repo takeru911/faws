@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "faws"
+version = "0.1.0"
+description = "fake aws services for python"
+authors = ["takeru911 <t.maehara911@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+flask = "^1.1.2"
+dicttoxml = "^1.7.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4.3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
