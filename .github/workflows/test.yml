@@ -1,20 +1,22 @@
-on: pull_request
-  branches:
-    - master
+on:
+  pull_request:
+    branches:
+      - master
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Install
-        uses: abatilo/actions/poetry@v1.5.0    
-          withs:
-            python_version: 3.7.0
-            poetry_version: 1.5.0
-            args: install
-      - name: Run test
-        uses: 
-            python_version: 3.7.0
-            poetry_version: 1.5.0
-            args: run pytest tests
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Setup Env
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+      - name: Run Test
+        run: |
+          make test/all
