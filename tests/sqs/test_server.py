@@ -1,4 +1,5 @@
 import pytest
+from unittest import mock
 from faws.sqs import server
 
 
@@ -66,7 +67,25 @@ def test_do_get_queue_url(created_queue_server):
 
 
 def test_do_send_message(created_queue_server):
-    pass
+    with mock.patch("faws.sqs.queue.generate_uuid", return_value="1111"):
+        assert created_queue_server.do_operation(
+            {
+                "Action": "SendMessage",
+                "QueueUrl": "http://localhost:5000/queues/test_queue_1",
+                "MessageBody": "taker"
+            }
+        ) == {
+            "SendMessageResponse": {
+                "SendMessageResult": {
+                    "MD5OfMessageBody": "hogehoge",
+                    "MD5OfMessageAttributes": "hugahuga",
+                    "MessageId": "1111"
+                },
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                }
+            }
+        }
 
 
 def test_determine_operation_raises_when_non_exist_operation():

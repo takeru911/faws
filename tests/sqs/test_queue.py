@@ -25,7 +25,6 @@ def test_add_message():
 def test_message_set_delay():
     message = Message(
         message_body="hoge",
-        message_id="1111",
         message_inserted_at=datetime(2020, 5, 28, 0, 0, 0),
         delay_seconds=10
     )
