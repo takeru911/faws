@@ -48,6 +48,12 @@ class Queue:
         self._messages[message.message_id] = message
         return message
 
+    def get_message(self) -> Message:
+        print("hoge")
+        for message_id, message in self.messages.items():
+            if message.is_callable():
+                return message
+
     def __eq__(self, other: Queue) -> bool:
         return self.queue_url == other.queue_url \
                and self.queue_name == other.queue_name \
@@ -73,3 +79,6 @@ class Message:
     def __post_init__(self):
         self.message_id = generate_uuid()
         self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(seconds=self.delay_seconds)
+
+    def is_callable(self):
+        return True

@@ -30,3 +30,14 @@ def test_message_set_delay():
     )
 
     assert message.message_deliverable_time == datetime(2020, 5, 28, 0, 0, 10)
+
+
+def test_get_message():
+    queue = Queue("test-queue")
+
+    with mock.patch("uuid.uuid4", return_value="1111"):
+        message = queue.add_message(
+            "takerun"
+        )
+
+        assert queue.get_message() == message
