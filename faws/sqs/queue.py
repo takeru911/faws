@@ -61,14 +61,15 @@ def generate_uuid() -> str:
 @dataclasses.dataclass
 class Message:
     message_body: str
-    message_id: str = generate_uuid()
     message_attributes: Optional[Dict] = None
     delay_seconds: int = 0
     message_system_attributes: Optional[Dict] = None
     message_deduplication_id: Optional[str] = None
     message_group_id: Optional[str] = None
     message_inserted_at: datetime = datetime.datetime.now()
+    message_id: str = dataclasses.field(init=False)
     message_deliverable_time: datetime = dataclasses.field(init=False)
 
     def __post_init__(self):
+        self.message_id = generate_uuid()
         self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(seconds=self.delay_seconds)

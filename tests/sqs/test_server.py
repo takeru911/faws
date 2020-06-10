@@ -1,5 +1,14 @@
 import pytest
+from unittest import mock
 from faws.sqs import server
+
+
+@pytest.fixture
+def created_queue_server():
+    server.create_queue("test_queue_1")
+
+    return server
+
 
 def test_parse_request_data():
     actual = server.parse_request_data("Action=ListQueue&version=2015-02-01")
@@ -8,9 +17,8 @@ def test_parse_request_data():
     assert actual == expected
 
 
-def test_do_list_queues():
-    server.create_queue("test_queue_1")
-    server.create_queue("test_queue_2")
+def test_do_list_queues(created_queue_server):
+    created_queue_server.create_queue("test_queue_2")
     assert server.do_operation({
         "Action": "ListQueues"
     }) == {
@@ -42,21 +50,42 @@ def test_do_create_queue():
            }
 
 
-def test_do_get_queue_url():
-    server.create_queue("test-queue_1")
-    assert server.do_operation({
+def test_do_get_queue_url(created_queue_server):
+    assert created_queue_server.do_operation({
         "Action": "GetQueueUrl",
-        "QueueName": "test-queue_1"
+        "QueueName": "test_queue_1"
     }) == {
                "GetQueueUrlResponse": {
                    "GetQueueUrlResult": {
-                       "QueueUrl": f"https://localhost:5000/queues/test-queue_1"
+                       "QueueUrl": f"https://localhost:5000/queues/test_queue_1"
                    },
                    "ResponseMetadata": {
                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                    }
                }
            }
+
+
+def test_do_send_message(created_queue_server):
+    with mock.patch("faws.sqs.queue.generate_uuid", return_value="1111"):
+        assert created_queue_server.do_operation(
+            {
+                "Action": "SendMessage",
+                "QueueUrl": "http://localhost:5000/queues/test_queue_1",
+                "MessageBody": "taker"
+            }
+        ) == {
+            "SendMessageResponse": {
+                "SendMessageResult": {
+                    "MD5OfMessageBody": "hogehoge",
+                    "MD5OfMessageAttributes": "hugahuga",
+                    "MessageId": "1111"
+                },
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                }
+            }
+        }
 
 
 def test_determine_operation_raises_when_non_exist_operation():
