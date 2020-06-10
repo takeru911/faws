@@ -49,7 +49,6 @@ class Queue:
         return message
 
     def get_message(self) -> Message:
-        print("hoge")
         for message_id, message in self.messages.items():
             if message.is_callable():
                 return message
