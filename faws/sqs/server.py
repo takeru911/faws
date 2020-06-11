@@ -61,11 +61,11 @@ def get_queue_url(QueueName: str, **kwargs):
 
 def send_message(QueueUrl: str, MessageBody: str, **kwargs):
     queue_name = queue_name_from_queue_url(QueueUrl)
+    queue = queues.get_queue(queue_name)
     # message_attributeは
     # MessageAttribute.1.Name': 'City', 'MessageAttribute.1.Value.DataType': 'String'
     # のようなフォーマットで来るのでMessageAttributeを持つkwargsのsetを取得する
     message_attributes = parse_message_attribute({k: v for k, v in kwargs.items() if "MessageAttribute" in k})
-    queue = queues.get_queue(queue_name)
     message = queue.add_message(
         MessageBody,
         message_attributes=message_attributes,
@@ -78,6 +78,28 @@ def send_message(QueueUrl: str, MessageBody: str, **kwargs):
                 "MD5OfMessageBody": "hogehoge",
                 "MD5OfMessageAttributes": "hugahuga",
                 "MessageId": message.message_id
+            },
+            "ResponseMetadata": {
+                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+            }
+        }
+    }
+
+
+def receive_message(QueueUrl: str, **kwargs):
+    queue_name = queue_name_from_queue_url(QueueUrl)
+    queue = queues.get_queue(queue_name)
+    message = queue.get_message()
+
+    return {
+        "ReceiveMessageResponse": {
+            "ReceiveMessageResult": {
+                "Message": {
+                    "MessageId": message.message_id,
+                    "ReceiptHandle": "barbar",
+                    "MD5OFBody": "hogehoge",
+                    "Body": message.message_body,
+                }
             },
             "ResponseMetadata": {
                 "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
@@ -129,6 +151,8 @@ def do_operation(request_data: Dict):
         return create_queue(**request_data)
     if action == "SendMessage":
         return send_message(**request_data)
+    if action == "ReceiveMessage":
+        return receive_message(**request_data)
     raise NotImplementedError()
 
 
