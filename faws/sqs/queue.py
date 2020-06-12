@@ -79,5 +79,10 @@ class Message:
         self.message_id = generate_uuid()
         self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(seconds=self.delay_seconds)
 
+    def get_message_attribute(self, message_attribute_name: str) -> Optional[Dict]:
+        if message_attribute_name == "All":
+            return self.message_attributes
+        return self.message_attributes.get(message_attribute_name)
+
     def is_callable(self):
         return True
