@@ -1,8 +1,7 @@
 from __future__ import annotations
 import datetime
-import uuid
-import dataclasses
-from typing import Dict, Optional
+from faws.sqs.message import Message
+from typing import Dict
 
 
 class Queue:
@@ -57,32 +56,3 @@ class Queue:
         return self.queue_url == other.queue_url \
                and self.queue_name == other.queue_name \
                and self.created_at == other.created_at
-
-
-def generate_uuid() -> str:
-    return str(uuid.uuid4())
-
-
-@dataclasses.dataclass
-class Message:
-    message_body: str
-    message_attributes: Optional[Dict] = None
-    delay_seconds: int = 0
-    message_system_attributes: Optional[Dict] = None
-    message_deduplication_id: Optional[str] = None
-    message_group_id: Optional[str] = None
-    message_inserted_at: datetime = datetime.datetime.now()
-    message_id: str = dataclasses.field(init=False)
-    message_deliverable_time: datetime = dataclasses.field(init=False)
-
-    def __post_init__(self):
-        self.message_id = generate_uuid()
-        self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(seconds=self.delay_seconds)
-
-    def get_message_attribute(self, message_attribute_name: str) -> Optional[Dict]:
-        if message_attribute_name == "All":
-            return self.message_attributes
-        return self.message_attributes.get(message_attribute_name)
-
-    def is_callable(self):
-        return True

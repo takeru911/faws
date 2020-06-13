@@ -67,7 +67,7 @@ def test_do_get_queue_url(created_queue_server):
 
 
 def test_do_send_message(created_queue_server):
-    with mock.patch("faws.sqs.queue.generate_uuid", return_value="1111"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
         assert created_queue_server.do_operation(
             {
                 "Action": "SendMessage",
@@ -111,18 +111,3 @@ def test_queue_name_from_queue_url_invalid_url():
         server.queue_name_from_queue_url(invalid_url)
 
 
-def test_parse_message_attribute():
-    raw_message_attribute = {
-        'MessageAttribute.1.Name': 'City', 'MessageAttribute.1.Value.DataType': 'String','MessageAttribute.1.Value.StringValue': 'Any+City',
-        'MessageAttribute.2.Name': 'Greeting', 'MessageAttribute.2.Value.DataType': 'Binary', 'MessageAttribute.2.Value.BinaryValue': 'SGVsbG8sIFdvcmxkIQ%3D%3D',
-        'MessageAttribute.3.Name': 'Population', 'MessageAttribute.3.Value.DataType': 'Number', 'MessageAttribute.3.Value.StringValue': '1250800',
-    }
-    print(raw_message_attribute.items())
-
-    actual = server.parse_message_attribute(raw_message_attribute)
-    expected = {
-        "City": {"StringValue": "Any+City", "DataType": "String"},
-        "Greeting": {"BinaryValue": "SGVsbG8sIFdvcmxkIQ%3D%3D", "DataType": "Binary"},
-        "Population": {"StringValue": "1250800", "DataType": "Number"},
-    }
-    assert actual == expected
