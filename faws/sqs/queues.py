@@ -6,7 +6,6 @@ from typing import List
 
 
 class Queues:
-
     def __init__(self, queue_storage_type: QueuesStorageType, **kwargs):
         self._queues_storage = build_queues_storage(queue_storage_type, **kwargs)
 

@@ -28,13 +28,13 @@ class Queue:
         return self._messages
 
     def add_message(
-            self,
-            message_body: str,
-            message_attributes: Dict = None,
-            delay_seconds: int = 0,
-            message_system_attributes: Dict = None,
-            message_deduplication_id: str = None,
-            message_group_id: str = None
+        self,
+        message_body: str,
+        message_attributes: Dict = None,
+        delay_seconds: int = 0,
+        message_system_attributes: Dict = None,
+        message_deduplication_id: str = None,
+        message_group_id: str = None,
     ) -> Message:
         message = Message(
             message_body,
@@ -42,7 +42,7 @@ class Queue:
             delay_seconds=delay_seconds,
             message_system_attributes=message_system_attributes,
             message_deduplication_id=message_deduplication_id,
-            message_group_id=message_group_id
+            message_group_id=message_group_id,
         )
         self._messages[message.message_id] = message
         return message
@@ -54,6 +54,8 @@ class Queue:
         return None
 
     def __eq__(self, other: Queue) -> bool:
-        return self.queue_url == other.queue_url \
-               and self.queue_name == other.queue_name \
-               and self.created_at == other.created_at
+        return (
+            self.queue_url == other.queue_url
+            and self.queue_name == other.queue_name
+            and self.created_at == other.created_at
+        )

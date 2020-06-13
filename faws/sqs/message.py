@@ -22,17 +22,26 @@ class MessageAttribute:
     value: str
 
     @classmethod
-    def from_request_data(cls, request_message_attribute_data: Dict) -> Optional[Dict[str, MessageAttribute]]:
-        if not request_message_attribute_data or len(request_message_attribute_data) == 0:
+    def from_request_data(
+        cls, request_message_attribute_data: Dict
+    ) -> Optional[Dict[str, MessageAttribute]]:
+        if (
+            not request_message_attribute_data
+            or len(request_message_attribute_data) == 0
+        ):
             return None
 
         num_attributes = int(len(request_message_attribute_data) / 3)
         message_attributes = {}
         for i in range(1, num_attributes + 1):
-            attribute_name = request_message_attribute_data[f"MessageAttribute.{i}.Name"]
+            attribute_name = request_message_attribute_data[
+                f"MessageAttribute.{i}.Name"
+            ]
             try:
                 attribute_data_type = MessageAttributeType(
-                    request_message_attribute_data[f"MessageAttribute.{i}.Value.DataType"]
+                    request_message_attribute_data[
+                        f"MessageAttribute.{i}.Value.DataType"
+                    ]
                 )
                 if attribute_data_type == MessageAttributeType.STRING:
                     attribute_value = request_message_attribute_data[
@@ -47,8 +56,10 @@ class MessageAttribute:
                         f"MessageAttribute.{i}.Value.BinaryValue"
                     ]
             except ValueError:
-                raise ValueError(f"The type of message(user) attribute '{attribute_name}' is invalid. "
-                                 f"You must use only the following supported type prefixes: Binary, Number, String")
+                raise ValueError(
+                    f"The type of message(user) attribute '{attribute_name}' is invalid. "
+                    f"You must use only the following supported type prefixes: Binary, Number, String"
+                )
             message_attributes[attribute_name] = MessageAttribute(
                 attribute_data_type, attribute_value
             )
@@ -58,8 +69,10 @@ class MessageAttribute:
     def to_dict(self) -> Dict[str, Dict]:
         return {
             # String/Numberの場合はStringValue, Binaryの場合はBinaryValueとする
-            "StringValue" if self.data_type != MessageAttributeType.BINARY else "BinaryValue": self.value,
-            "DataType": self.data_type.value
+            "StringValue"
+            if self.data_type != MessageAttributeType.BINARY
+            else "BinaryValue": self.value,
+            "DataType": self.data_type.value,
         }
 
 
@@ -76,9 +89,13 @@ class Message:
     message_deliverable_time: datetime = dataclasses.field(init=False)
 
     def __post_init__(self):
-        self.message_attributes = MessageAttribute.from_request_data(self.message_attributes)
+        self.message_attributes = MessageAttribute.from_request_data(
+            self.message_attributes
+        )
         self.message_id = generate_uuid()
-        self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(seconds=self.delay_seconds)
+        self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(
+            seconds=self.delay_seconds
+        )
 
     def is_callable(self):
         return True
