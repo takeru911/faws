@@ -16,12 +16,12 @@ class TestInMemoryQueuesStorage:
             queues_storage.create_queue("test_queue")
         return queues_storage
 
-    def create_free_created_at_queue(self, queue_name: str, created_at: datetime.datetime) -> Queue:
+    def create_free_created_at_queue(
+        self, queue_name: str, created_at: datetime.datetime
+    ) -> Queue:
         with mock.patch("datetime.datetime") as mock_datetime:
             mock_datetime.now.return_value = created_at
-            queue = Queue(
-                queue_name=queue_name
-            )
+            queue = Queue(queue_name=queue_name)
 
             return queue
 
@@ -39,8 +39,7 @@ class TestInMemoryQueuesStorage:
         queue_name = "test_queue"
         expected = {
             queue_name: self.create_free_created_at_queue(
-                queue_name,
-                datetime.datetime(2020, 5, 28, 0, 0, 0)
+                queue_name, datetime.datetime(2020, 5, 28, 0, 0, 0)
             )
         }
         assert added_queues.queues == expected
@@ -59,9 +58,10 @@ class TestInMemoryQueuesStorage:
 
     def test_get_queues(self, added_queues):
         queue_name = "test_queue"
-        expected = [self.create_free_created_at_queue(
-            queue_name,
-            datetime.datetime(2020, 5, 28, 0, 0, 0)
-        )]
+        expected = [
+            self.create_free_created_at_queue(
+                queue_name, datetime.datetime(2020, 5, 28, 0, 0, 0)
+            )
+        ]
 
         assert added_queues.get_queues() == expected

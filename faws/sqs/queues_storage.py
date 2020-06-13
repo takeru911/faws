@@ -10,7 +10,6 @@ def build_queues_storage(storage_type: QueueStorageType, **kwargs) -> QueuesStor
 
 
 class QueuesStorage:
-
     def __init__(self, **kwargs):
         pass
 
@@ -53,9 +52,7 @@ class InMemoryQueuesStorage(QueuesStorage):
     def create_queue(self, queue_name: str) -> Queue:
         if queue_name in self.queues:
             return self.queues[queue_name]
-        queue = Queue(
-            queue_name=queue_name
-        )
+        queue = Queue(queue_name=queue_name)
         InMemoryQueuesStorage._queues[queue_name] = queue
 
         return queue

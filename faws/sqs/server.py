@@ -16,7 +16,7 @@ def get_queues():
     if "queues" not in g:
         g.queues = Queues(
             current_app.config["QueuesStorageType"],
-            **current_app.config.get("QueuesStorageTypeConfig", {})
+            **current_app.config.get("QueuesStorageTypeConfig", {}),
         )
         return g.queues
     return g.queues
@@ -35,12 +35,8 @@ def create_queue(QueueName: str, **kwargs):
     queue = get_queues().create_queue(QueueName)
     return {
         "CreateQueueResponse": {
-            "CreateQueueResult": {
-                "QueueUrl": queue.queue_url
-            },
-            "ResponseMetadata": {
-                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-            }
+            "CreateQueueResult": {"QueueUrl": queue.queue_url},
+            "ResponseMetadata": {"RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"},
         }
     }
 
@@ -50,12 +46,8 @@ def get_list_queues(**kwargs):
 
     return {
         "ListQueuesResponse": {
-            "ListQueuesResult": {
-                "QueueUrl": queue_urls
-            },
-            "ResponseMetadata": {
-                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-            }
+            "ListQueuesResult": {"QueueUrl": queue_urls},
+            "ResponseMetadata": {"RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"},
         }
     }
 
@@ -64,12 +56,8 @@ def get_queue_url(QueueName: str, **kwargs):
     queue = get_queues().get_queue(QueueName)
     return {
         "GetQueueUrlResponse": {
-            "GetQueueUrlResult": {
-                "QueueUrl": queue.queue_url
-            },
-            "ResponseMetadata": {
-                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-            }
+            "GetQueueUrlResult": {"QueueUrl": queue.queue_url},
+            "ResponseMetadata": {"RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"},
         }
     }
 
@@ -92,24 +80,22 @@ def send_message(QueueUrl: str, MessageBody: str, **kwargs):
             "SendMessageResult": {
                 "MD5OfMessageBody": "hogehoge",
                 "MD5OfMessageAttributes": "hugahuga",
-                "MessageId": message.message_id
+                "MessageId": message.message_id,
             },
-            "ResponseMetadata": {
-                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-            }
+            "ResponseMetadata": {"RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"},
         }
     }
 
 
 def receive_message(QueueUrl: str, **kwargs):
     queue_name = queue_name_from_queue_url(QueueUrl)
-    message_attribute_names = {k: v for k, v in kwargs.items() if "MessageAttribute" in k}
+    message_attribute_names = {
+        k: v for k, v in kwargs.items() if "MessageAttribute" in k
+    }
     queue = get_queues().get_queue(queue_name)
     response_data = {
         "ReceiveMessageResponse": {
-            "ResponseMetadata": {
-                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-            }
+            "ResponseMetadata": {"RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"}
         }
     }
     message = queue.get_message()
@@ -126,15 +112,17 @@ def receive_message(QueueUrl: str, **kwargs):
     }
     if len(message_attribute_names) == 0:
         return response_data
-    message_attributes = select_message_attribute(message.message_attributes, list(message_attribute_names.values()))
-    response_data["ReceiveMessageResponse"]["ReceiveMessageResult"]["Message"]["MessageAttribute"] = [
-        {"Name": k, "Value": v.to_dict()} for k, v in message_attributes.items()
-    ]
+    message_attributes = select_message_attribute(
+        message.message_attributes, list(message_attribute_names.values())
+    )
+    response_data["ReceiveMessageResponse"]["ReceiveMessageResult"]["Message"][
+        "MessageAttribute"
+    ] = [{"Name": k, "Value": v.to_dict()} for k, v in message_attributes.items()]
     return response_data
 
 
 def select_message_attribute(
-        message_attributes: Dict[str, MessageAttribute], message_attribute_names: List[str]
+    message_attributes: Dict[str, MessageAttribute], message_attribute_names: List[str]
 ) -> Dict[str, MessageAttribute]:
     if "All" in message_attribute_names:
         return message_attributes
@@ -176,16 +164,12 @@ def create_app(app_config: Dict = None):
     if app_config is not None:
         app.config.update(app_config)
 
-    @app.route('/', methods=["POST"])
+    @app.route("/", methods=["POST"])
     def index():
-        request_data = parse_request_data(
-            request.get_data().decode(encoding="utf-8")
-        )
+        request_data = parse_request_data(request.get_data().decode(encoding="utf-8"))
 
         result = do_operation(request_data)
         response_data = dict2xml(result)
-        return Response(
-            response_data,
-            mimetype="text/xml"
-        )
+        return Response(response_data, mimetype="text/xml")
+
     return app
