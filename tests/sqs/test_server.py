@@ -1,12 +1,43 @@
 import pytest
+from dict2xml import dict2xml
 from unittest import mock
 from faws.sqs import server
+from faws.sqs.queues import QueuesStorageType
 
 
 @pytest.fixture
-def created_queue_server():
-    server.create_queue("test_queue_1")
-    return server
+def client():
+    app_config = {
+        "QueuesStorageType": QueuesStorageType.IN_MEMORY,
+        "TESTING": True
+    }
+    app = server.create_app(app_config)
+    with app.test_client() as client:
+        with app.app_context():
+            server.init_queues()
+        yield client
+
+
+def dict2xml_bytes(d):
+    return bytes(dict2xml(d), encoding="utf-8")
+
+
+def create_queue(client, queue_name):
+    return client.post(
+        "/", data=f"Action=CreateQueue&QueueName={queue_name}"
+    )
+
+
+def list_queues(client):
+    return client.post(
+        "/", data=f"Action=ListQueues"
+    )
+
+
+def get_queue_url(client, queue_name):
+    return client.post(
+        "/", data=f"Action=GetQueueUrl&QueueName={queue_name}"
+    )
 
 
 def test_parse_request_data():
@@ -16,28 +47,28 @@ def test_parse_request_data():
     assert actual == expected
 
 
-def test_do_list_queues(created_queue_server):
-    created_queue_server.create_queue("test_queue_2")
-    assert server.do_operation({
-        "Action": "ListQueues"
-    }) == {
+def test_do_list_queues(client):
+    create_queue(client, "test_queue_1")
+    create_queue(client, "test_queue_2")
+    assert list_queues(client).data == dict2xml_bytes({
                "ListQueuesResponse": {
-                   "ListQueuesResult": [
-                       "https://localhost:5000/queues/test_queue_1",
-                       "https://localhost:5000/queues/test_queue_2"
-                    ],
+                   "ListQueuesResult": {
+                       "QueueUrl": [
+                           "https://localhost:5000/queues/test_queue_1",
+                           "https://localhost:5000/queues/test_queue_2"
+                       ]
+                    },
                    "ResponseMetadata": {
                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                    }
                }
-           }
+           })
 
 
-def test_do_create_queue():
-    assert server.do_operation({
-        "Action": "CreateQueue",
-        "QueueName": "test-queue"
-    }) == {
+def test_do_create_queue(client):
+    response = create_queue(client, "test-queue")
+
+    assert response.data == dict2xml_bytes({
                "CreateQueueResponse": {
                    "CreateQueueResult": {
                        "QueueUrl": f"https://localhost:5000/queues/test-queue"
@@ -47,13 +78,13 @@ def test_do_create_queue():
                    }
                }
            }
+        )
 
 
-def test_do_get_queue_url(created_queue_server):
-    assert created_queue_server.do_operation({
-        "Action": "GetQueueUrl",
-        "QueueName": "test_queue_1"
-    }) == {
+def test_do_get_queue_url(client):
+    create_queue(client, "test_queue_1")
+
+    assert get_queue_url(client, "test_queue_1").data == dict2xml_bytes({
                "GetQueueUrlResponse": {
                    "GetQueueUrlResult": {
                        "QueueUrl": f"https://localhost:5000/queues/test_queue_1"
@@ -62,7 +93,7 @@ def test_do_get_queue_url(created_queue_server):
                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                    }
                }
-           }
+           })
 
 
 def test_do_send_message(created_queue_server):

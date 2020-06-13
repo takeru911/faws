@@ -14,6 +14,11 @@ class QueuesStorage:
     def __init__(self, **kwargs):
         pass
 
+    @classmethod
+    @abstractmethod
+    def init_storage(cls):
+        raise NotImplementedError
+
     @abstractmethod
     def queues(self):
         raise NotImplementedError
@@ -32,14 +37,18 @@ class QueuesStorage:
 
 
 class InMemoryQueuesStorage(QueuesStorage):
+    _queues = {}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._queues = {}
+
+    @classmethod
+    def init_storage(cls):
+        cls._queues = {}
 
     @property
     def queues(self):
-        return self._queues
+        return InMemoryQueuesStorage._queues
 
     def create_queue(self, queue_name: str) -> Queue:
         if queue_name in self.queues:
@@ -47,7 +56,7 @@ class InMemoryQueuesStorage(QueuesStorage):
         queue = Queue(
             queue_name=queue_name
         )
-        self._queues[queue_name] = queue
+        InMemoryQueuesStorage._queues[queue_name] = queue
 
         return queue
 
