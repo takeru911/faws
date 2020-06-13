@@ -57,11 +57,9 @@ class MessageAttribute:
 
     def to_dict(self) -> Dict[str, Dict]:
         return {
-            "Value": {
-                # String/Numberの場合はStringValue, Binaryの場合はBinaryValueとする
-                "StringValue" if self.data_type != MessageAttributeType.BINARY else "BinaryValue": self.value,
-                "DataType": self.data_type.value
-            }
+            # String/Numberの場合はStringValue, Binaryの場合はBinaryValueとする
+            "StringValue" if self.data_type != MessageAttributeType.BINARY else "BinaryValue": self.value,
+            "DataType": self.data_type.value
         }
 
 

@@ -20,15 +20,15 @@ def test_from_request_data():
 @pytest.mark.parametrize("message_attribute,expected", [
     (
             MessageAttribute(MessageAttributeType.BINARY, "hogehuga"),
-            {"Value": {"BinaryValue": "hogehuga", "DataType": "Binary"}}
+            {"BinaryValue": "hogehuga", "DataType": "Binary"}
     ),
     (
             MessageAttribute(MessageAttributeType.NUMBER, "123"),
-            {"Value": {"StringValue": "123", "DataType": "Number"}}
+            {"StringValue": "123", "DataType": "Number"}
     ),
     (
             MessageAttribute(MessageAttributeType.STRING, "tenteketen"),
-            {"Value": {"StringValue": "tenteketen", "DataType": "String"}}
+            {"StringValue": "tenteketen", "DataType": "String"}
     ),
 
 ])

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import datetime
 from faws.sqs.message import Message
-from typing import Dict
+from typing import Dict, Optional
 
 
 class Queue:
@@ -47,10 +47,11 @@ class Queue:
         self._messages[message.message_id] = message
         return message
 
-    def get_message(self) -> Message:
+    def get_message(self) -> Optional[Message]:
         for message_id, message in self.messages.items():
             if message.is_callable():
                 return message
+        return None
 
     def __eq__(self, other: Queue) -> bool:
         return self.queue_url == other.queue_url \

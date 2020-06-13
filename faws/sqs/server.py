@@ -91,20 +91,23 @@ def receive_message(QueueUrl: str, **kwargs):
     queue_name = queue_name_from_queue_url(QueueUrl)
     message_attribute_names = {k: v for k, v in kwargs.items() if "MessageAttribute" in k}
     queue = queues.get_queue(queue_name)
-    message = queue.get_message()
     response_data = {
         "ReceiveMessageResponse": {
-            "ReceiveMessageResult": {
-                "Message": {
-                    "MessageId": message.message_id,
-                    "ReceiptHandle": "barbar",
-                    "MD5OFBody": "hogehoge",
-                    "Body": message.message_body,
-                }
-            },
             "ResponseMetadata": {
                 "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
             }
+        }
+    }
+    message = queue.get_message()
+    if message is None:
+        return response_data
+
+    response_data["ReceiveMessageResponse"]["ReceiveMessageResult"] = {
+        "Message": {
+            "MessageId": message.message_id,
+            "ReceiptHandle": "barbar",
+            "MD5OFBody": "hogehoge",
+            "Body": message.message_body,
         }
     }
     if len(message_attribute_names) == 0:
