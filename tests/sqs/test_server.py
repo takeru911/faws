@@ -6,7 +6,6 @@ from faws.sqs import server
 @pytest.fixture
 def created_queue_server():
     server.create_queue("test_queue_1")
-
     return server
 
 
@@ -67,7 +66,7 @@ def test_do_get_queue_url(created_queue_server):
 
 
 def test_do_send_message(created_queue_server):
-    with mock.patch("faws.sqs.queue.generate_uuid", return_value="1111"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
         assert created_queue_server.do_operation(
             {
                 "Action": "SendMessage",
@@ -75,11 +74,146 @@ def test_do_send_message(created_queue_server):
                 "MessageBody": "taker"
             }
         ) == {
-            "SendMessageResponse": {
-                "SendMessageResult": {
-                    "MD5OfMessageBody": "hogehoge",
-                    "MD5OfMessageAttributes": "hugahuga",
-                    "MessageId": "1111"
+                   "SendMessageResponse": {
+                       "SendMessageResult": {
+                           "MD5OfMessageBody": "hogehoge",
+                           "MD5OfMessageAttributes": "hugahuga",
+                           "MessageId": "1111"
+                       },
+                       "ResponseMetadata": {
+                           "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                       }
+                   }
+               }
+
+
+def test_do_receive_message():
+    server.create_queue("test_receive_queue")
+    assert server.do_operation(
+            {
+                "Action": "ReceiveMessage",
+                "QueueUrl": "http://localhost:5000/queues/test_receive_queue",
+            }
+        ) == {
+        "ReceiveMessageResponse": {
+            "ResponseMetadata": {
+                "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+            }
+        }
+    }
+
+
+def test_receive_message_non_attribute():
+    queue_name = "test_receive_queue"
+    server.create_queue(queue_name)
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+        server.queues.get_queue(queue_name).add_message(
+            "hogehoge",
+            {"MessageAttribute"}
+        )
+        queue_url = f"http://localhost/queues/{queue_name}"
+        response = server.receive_message(queue_url)
+        assert response == {
+            "ReceiveMessageResponse": {
+                "ReceiveMessageResult": {
+                    "Message": {
+                        "MessageId": "1111",
+                        "ReceiptHandle": "barbar",
+                        "MD5OFBody": "hogehoge",
+                        "Body": "hogehoge",
+                    }
+                },
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                }
+            }
+        }
+
+
+def test_receive_message_with_attribute_select_one():
+    queue_name = "test_receive_queue_attr"
+    server.create_queue(queue_name)
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+        server.queues.get_queue(queue_name).add_message(
+            "hogehoge", message_attributes={
+                "MessageAttribute.1.Name": "v1",
+                "MessageAttribute.1.Value.DataType": "String",
+                "MessageAttribute.1.Value.StringValue": "hoge",
+                "MessageAttribute.2.Name": "v2",
+                "MessageAttribute.2.Value.DataType": "Number",
+                "MessageAttribute.2.Value.StringValue": "123",
+            }
+        )
+        queue_url = f"http://localhost/queues/{queue_name}"
+        response = server.receive_message(queue_url, **{
+            "MessageAttribute.1.Name": "v1",
+            "MessageAttribute.2.Name": "v2"
+        })
+        assert response == {
+            "ReceiveMessageResponse": {
+                "ReceiveMessageResult": {
+                    "Message": {
+                        "MessageId": "1111",
+                        "ReceiptHandle": "barbar",
+                        "MD5OFBody": "hogehoge",
+                        "Body": "hogehoge",
+                        "MessageAttribute": [
+                            {"Name": "v1", "Value": {
+                                "DataType": "String",
+                                "StringValue": "hoge"
+                            }},
+                            {"Name": "v2", "Value": {
+                                "DataType": "Number",
+                                "StringValue": "123"
+                            }}
+                        ]
+                    }
+                },
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                }
+            }
+        }
+
+
+
+def test_receive_message_with_attribute_select_all():
+    queue_name = "test_receive_queue_attr"
+    server.create_queue(queue_name)
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+        server.queues.get_queue(queue_name).add_message(
+            "hogehoge", message_attributes={
+                "MessageAttribute.1.Name": "v1",
+                "MessageAttribute.1.Value.DataType": "String",
+                "MessageAttribute.1.Value.StringValue": "hoge",
+                "MessageAttribute.2.Name": "v2",
+                "MessageAttribute.2.Value.DataType": "Number",
+                "MessageAttribute.2.Value.StringValue": "123",
+            }
+        )
+        queue_url = f"http://localhost/queues/{queue_name}"
+        response = server.receive_message(queue_url, **{
+            "MessageAttribute.1.Name": "All"
+        })
+        assert response == {
+            "ReceiveMessageResponse": {
+                "ReceiveMessageResult": {
+                    "Message": {
+                        "MessageId": "1111",
+                        "ReceiptHandle": "barbar",
+                        "MD5OFBody": "hogehoge",
+                        "Body": "hogehoge",
+                        "MessageAttribute": [
+                            {"Name": "v1", "Value": {
+                                "DataType": "String",
+                                "StringValue": "hoge"
+                            }},
+                            {"Name": "v2", "Value": {
+                                "DataType": "Number",
+                                "StringValue": "123"
+                            }}
+                        ]
+                    }
                 },
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
@@ -109,20 +243,3 @@ def test_queue_name_from_queue_url_invalid_url():
     invalid_url = "hoge://hugahuga/queue"
     with pytest.raises(ValueError):
         server.queue_name_from_queue_url(invalid_url)
-
-
-def test_parse_message_attribute():
-    raw_message_attribute = {
-        'MessageAttribute.1.Name': 'City', 'MessageAttribute.1.Value.DataType': 'String','MessageAttribute.1.Value.StringValue': 'Any+City',
-        'MessageAttribute.2.Name': 'Greeting', 'MessageAttribute.2.Value.DataType': 'Binary', 'MessageAttribute.2.Value.BinaryValue': 'SGVsbG8sIFdvcmxkIQ%3D%3D',
-        'MessageAttribute.3.Name': 'Population', 'MessageAttribute.3.Value.DataType': 'Number', 'MessageAttribute.3.Value.StringValue': '1250800',
-    }
-    print(raw_message_attribute.items())
-
-    actual = server.parse_message_attribute(raw_message_attribute)
-    expected = {
-        "City": {"StringValue": "Any+City", "DataType": "String"},
-        "Greeting": {"BinaryValue": "SGVsbG8sIFdvcmxkIQ%3D%3D", "DataType": "Binary"},
-        "Population": {"StringValue": "1250800", "DataType": "Number"},
-    }
-    assert actual == expected
