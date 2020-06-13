@@ -87,6 +87,31 @@ def test_do_send_message(created_queue_server):
                }
 
 
+def test_send_message_with_attribute(created_queue_server):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+        assert created_queue_server.do_operation(
+            {
+                "Action": "SendMessage",
+                "QueueUrl": "http://localhost:5000/queues/test_queue_1",
+                "MessageBody": "taker",
+                "MessageAttribute.1.Name": "v1",
+                "MessageAttribute.1.Value.DataType": "String",
+                "MessageAttribute.1.Value.StringValue": "hoge",
+            }
+        ) == {
+                   "SendMessageResponse": {
+                       "SendMessageResult": {
+                           "MD5OfMessageBody": "hogehoge",
+                           "MD5OfMessageAttributes": "hugahuga",
+                           "MessageId": "1111"
+                       },
+                       "ResponseMetadata": {
+                           "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                       }
+                   }
+               }
+
+
 def test_do_receive_message():
     server.create_queue("test_receive_queue")
     assert server.do_operation(
