@@ -40,11 +40,14 @@ version = "0.4.3"
 
 [[package]]
 category = "main"
-description = "Converts a Python dictionary or other native data type into a valid XML string."
-name = "dicttoxml"
+description = "Small utility to convert a python dictionary into an XML string"
+name = "dict2xml"
 optional = false
 python-versions = "*"
-version = "1.7.4"
+version = "1.7.0"
+
+[package.extras]
+tests = ["noseOfYeti (2.0.1)", "pytest (5.3.1)"]
 
 [[package]]
 category = "main"
@@ -231,7 +234,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "06355828b02d6a8ee0ef97c7eb53fa578564b8f59c78d9a22299e1c1971ed9de"
+content-hash = "c2b3956a12b6c532be6af9b475558879a680e3e3058ec35f5f3978a81a786ca6"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -251,8 +254,8 @@ colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
 ]
-dicttoxml = [
-    {file = "dicttoxml-1.7.4.tar.gz", hash = "sha256:ea44cc4ec6c0f85098c57a431a1ee891b3549347b07b7414c8a24611ecf37e45"},
+dict2xml = [
+    {file = "dict2xml-1.7.0.tar.gz", hash = "sha256:1446e7d89b39630e53c20eb38e05046216e3dd72a822954fe7548fa59145d62d"},
 ]
 flask = [
     {file = "Flask-1.1.2-py2.py3-none-any.whl", hash = "sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557"},

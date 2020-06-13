@@ -7,7 +7,7 @@ authors = ["takeru911 <t.maehara911@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.7"
 flask = "^1.1.2"
-dicttoxml = "^1.7.4"
+dict2xml = "^1.7.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.3"

@@ -3,7 +3,7 @@ from typing import Dict, Optional, List
 from faws.sqs.message import MessageAttribute, MessageAttributeType
 from faws.sqs.queues import Queues
 from faws.sqs.queues_storage import QueuesStorageType
-import dicttoxml
+from dict2xml import dict2xml
 import re
 import urllib
 
@@ -163,7 +163,7 @@ def index():
     )
 
     result = do_operation(request_data)
-    response_data = dicttoxml.dicttoxml(result, root=False, item_func=lambda x: "QueueUrl")
+    response_data = dict2xml(result)
     return Response(
         response_data,
         mimetype="text/xml"
