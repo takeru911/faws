@@ -14,6 +14,9 @@ class Queues:
     def queues(self):
         return self._queues_storage.queues
 
+    def init_queues(self):
+        self._queues_storage.init_storage()
+
     def create_queue(self, queue_name: str) -> Queue:
         queue = self._queues_storage.get_queue(queue_name)
         if queue is not None:

@@ -1,14 +1,25 @@
-from flask import Flask, request, Response
-from typing import Dict, Optional, List
-from faws.sqs.message import MessageAttribute, MessageAttributeType
-from faws.sqs.queues import Queues
-from faws.sqs.queues_storage import QueuesStorageType
+from flask import Flask, request, Response, g, current_app
+from typing import Dict, List
+from faws.sqs.message import MessageAttribute
+from faws.sqs.queues import Queues, QueuesStorageType
 from dict2xml import dict2xml
 import re
 import urllib
 
-app = Flask(__name__)
-queues = Queues(QueuesStorageType.IN_MEMORY)
+
+def init_queues():
+    queues = get_queues()
+    queues.init_queues()
+
+
+def get_queues():
+    if "queues" not in g:
+        g.queues = Queues(
+            current_app.config["QueuesStorageType"],
+            **current_app.config.get("QueuesStorageTypeConfig", {})
+        )
+        return g.queues
+    return g.queues
 
 
 def parse_request_data(request_data: str):
@@ -21,7 +32,7 @@ def parse_request_data(request_data: str):
 
 
 def create_queue(QueueName: str, **kwargs):
-    queue = queues.create_queue(QueueName)
+    queue = get_queues().create_queue(QueueName)
     return {
         "CreateQueueResponse": {
             "CreateQueueResult": {
@@ -35,10 +46,13 @@ def create_queue(QueueName: str, **kwargs):
 
 
 def get_list_queues(**kwargs):
-    queue_urls = [queue.queue_url for queue in queues.get_queues()]
+    queue_urls = [queue.queue_url for queue in get_queues().get_queues()]
+
     return {
         "ListQueuesResponse": {
-            "ListQueuesResult": queue_urls,
+            "ListQueuesResult": {
+                "QueueUrl": queue_urls
+            },
             "ResponseMetadata": {
                 "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
             }
@@ -47,7 +61,7 @@ def get_list_queues(**kwargs):
 
 
 def get_queue_url(QueueName: str, **kwargs):
-    queue = queues.get_queue(QueueName)
+    queue = get_queues().get_queue(QueueName)
     return {
         "GetQueueUrlResponse": {
             "GetQueueUrlResult": {
@@ -62,7 +76,7 @@ def get_queue_url(QueueName: str, **kwargs):
 
 def send_message(QueueUrl: str, MessageBody: str, **kwargs):
     queue_name = queue_name_from_queue_url(QueueUrl)
-    queue = queues.get_queue(queue_name)
+    queue = get_queues().get_queue(queue_name)
     # message_attributeは
     # MessageAttribute.1.Name': 'City', 'MessageAttribute.1.Value.DataType': 'String'
     # のようなフォーマットで来るのでMessageAttributeを持つkwargsのsetを取得する
@@ -90,7 +104,7 @@ def send_message(QueueUrl: str, MessageBody: str, **kwargs):
 def receive_message(QueueUrl: str, **kwargs):
     queue_name = queue_name_from_queue_url(QueueUrl)
     message_attribute_names = {k: v for k, v in kwargs.items() if "MessageAttribute" in k}
-    queue = queues.get_queue(queue_name)
+    queue = get_queues().get_queue(queue_name)
     response_data = {
         "ReceiveMessageResponse": {
             "ResponseMetadata": {
@@ -156,19 +170,22 @@ def do_operation(request_data: Dict):
     raise NotImplementedError()
 
 
-@app.route('/', methods=["POST"])
-def index():
-    request_data = parse_request_data(
-        request.get_data().decode(encoding="utf-8")
-    )
+def create_app(app_config: Dict = None):
+    app = Flask(__name__, instance_relative_config=True)
+    app.config["QueuesStorageType"] = QueuesStorageType.IN_MEMORY
+    if app_config is not None:
+        app.config.update(app_config)
 
-    result = do_operation(request_data)
-    response_data = dict2xml(result)
-    return Response(
-        response_data,
-        mimetype="text/xml"
-    )
+    @app.route('/', methods=["POST"])
+    def index():
+        request_data = parse_request_data(
+            request.get_data().decode(encoding="utf-8")
+        )
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
+        result = do_operation(request_data)
+        response_data = dict2xml(result)
+        return Response(
+            response_data,
+            mimetype="text/xml"
+        )
+    return app
