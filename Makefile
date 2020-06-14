@@ -7,3 +7,7 @@ test/all:
 
 test/%:
 	poetry run pytest tests/$*
+
+format:
+	@black faws
+	@black tests
