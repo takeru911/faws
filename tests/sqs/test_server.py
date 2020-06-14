@@ -58,7 +58,8 @@ def test_parse_request_data():
     assert actual == expected
 
 
-def test_do_list_queues(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_list_queues(uuid, client):
     create_queue(client, "test_queue_1")
     create_queue(client, "test_queue_2")
     assert list_queues(client).data == dict2xml_bytes(
@@ -78,7 +79,8 @@ def test_do_list_queues(client):
     )
 
 
-def test_do_create_queue(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_create_queue(uuid, client):
     response = create_queue(client, "test-queue")
 
     assert response.data == dict2xml_bytes(
@@ -95,7 +97,8 @@ def test_do_create_queue(client):
     )
 
 
-def test_do_get_queue_url(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_get_queue_url(uuid, client):
     create_queue(client, "test_queue_1")
 
     assert get_queue_url(client, "test_queue_1").data == dict2xml_bytes(
@@ -112,7 +115,8 @@ def test_do_get_queue_url(client):
     )
 
 
-def test_do_send_message(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_send_message(uuid, client):
     create_queue(client, "test_queue_1")
     with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
         assert send_message(
@@ -133,7 +137,8 @@ def test_do_send_message(client):
         )
 
 
-def test_send_message_with_attribute(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_send_message_with_attribute(uuid, client):
     create_queue(client, "test_queue_1")
     with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
         assert send_message(
@@ -161,22 +166,25 @@ def test_send_message_with_attribute(client):
         )
 
 
-def test_do_receive_message_non_message(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_receive_message_non_message(uuid, client):
     create_queue(client, "test_receive_queue")
     assert receive_message(
         client, "http://localhost:5000/queues/test_receive_queue"
     ).data == dict2xml_bytes(
         {
             "ReceiveMessageResponse": {
+                "ReceiveMessageResult": {},
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                }
+                },
             }
         }
     )
 
 
-def test_receive_message_non_attribute(client):
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_receive_message_non_attribute(uuid, client):
     queue_name = "test_receive_queue"
     create_queue(client, queue_name)
     queue_url = f"http://localhost/queues/{queue_name}"
@@ -201,6 +209,7 @@ def test_receive_message_non_attribute(client):
         )
 
 
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
 @pytest.mark.parametrize(
     "attribute_names_pattern",
     [
@@ -208,7 +217,7 @@ def test_receive_message_non_attribute(client):
         {"MessageAttribute.1.Name": "All",},
     ],
 )
-def test_receive_message_with_attribute(client, attribute_names_pattern):
+def test_receive_message_with_attribute(uuid, client, attribute_names_pattern):
     queue_name = "test_receive_queue_attr"
     queue_url = f"http://localhost/queues/{queue_name}"
     create_queue(client, queue_name)
