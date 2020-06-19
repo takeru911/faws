@@ -45,10 +45,10 @@ def receive_message(client, queue_url, message_attribute_names=None):
     data = f"Action=ReceiveMessage&QueueUrl={queue_url}"
     if message_attribute_names is None:
         return client.post("/", data=data)
-    message_attribute_names_data = "&".join(
+    message_attribute_response_data = "&".join(
         [f"{k}={v}" for k, v in message_attribute_names.items()]
     )
-    return client.post("/", data=data + "&" + message_attribute_names_data)
+    return client.post("/", data=data + "&" + message_attribute_response_data)
 
 
 def test_parse_request_data():

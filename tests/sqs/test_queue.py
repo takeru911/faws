@@ -1,6 +1,7 @@
 from datetime import datetime
 from faws.sqs.queue import Queue, Message
 from unittest import mock
+import pytest
 
 
 def test_equal():
@@ -14,26 +15,22 @@ def test_equal():
         assert queue != other
 
 
-def test_add_message():
+
+def test_add_message(dt):
+    dt.return_value = datetime(2020, 5, 20, 0, 0, 0)
     queue = Queue("test-queue")
     message = queue.add_message("takerun")
     assert message.message_id in queue.messages
 
-
-def test_message_set_delay():
-    message = Message(
-        message_body="hoge",
-        message_inserted_at=datetime(2020, 5, 28, 0, 0, 0),
-        delay_seconds=10,
-    )
-
-    assert message.message_deliverable_time == datetime(2020, 5, 28, 0, 0, 10)
-
-
+@mock.patch("datetime.datetime")
+@pytest.mark.parametrize("message_attr,message", [
+    {"message_body": "test", "message_attributes": None, "delay_seconds": 0},
+    {"message_body": "test", "message_attributes": None, "delay_seconds": 10},
+])
 def test_get_message():
     queue = Queue("test-queue")
 
-    with mock.patch("uuid.uuid4", return_value="1111"):
+    with mock.patch("uuid.uuid4", return_value="1111"), mock.patch("datetime.datetime."):
         message = queue.add_message("takerun")
 
         assert queue.get_message() == message
