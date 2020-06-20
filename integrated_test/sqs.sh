@@ -61,6 +61,37 @@ if [ "${ACTUAL}" != "${EXPECTED}" ]; then
     exit 1
 fi
 
+
+
+# 配信遅延が正常に動くか
+aws sqs create-queue --queue-name delay-queue --endpoint http://${SQS_ENDPOINT}
+aws sqs send-message --queue-url http://${SQS_ENDPOINT}/queues/delay-queue --message-body "test" --endpoint http://${SQS_ENDPOINT} --delay-seconds 5
+
+# 遅延が5秒なのでメッセージは受信できるものはない
+ACTUAL=$(aws sqs receive-message --queue-url http://${SQS_ENDPOINT}/queues/delay-queue --endpoint http://${SQS_ENDPOINT})
+EXPECTED=""
+if [ "${ACTUAL}" != "${EXPECTED}" ]; then
+    echo "failed set delay message"
+    echo "ACTUAL: ${ACTUAL}"
+    echo "EXPECTED: ${EXPECTED}"
+    kill -- -"${P_GID}"
+    exit 1
+fi
+
+# 8秒待機し、遅延が解除され受信できる
+sleep 8
+ACTUAL=$(aws sqs receive-message --queue-url http://${SQS_ENDPOINT}/queues/delay-queue --endpoint http://${SQS_ENDPOINT} |  jq -r '.Messages[0].Body')
+EXPECTED="test"
+
+if [ "${ACTUAL}" != "${EXPECTED}" ]; then
+    echo "failed set delay message"
+    echo "ACTUAL: ${ACTUAL}"
+    echo "EXPECTED: ${EXPECTED}"
+    kill -- -"${P_GID}"
+    exit 1
+fi
+
+
 echo "TERMINATE SQS SERVER"
 set +e
 kill -- -"${P_GID}"
