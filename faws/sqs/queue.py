@@ -5,11 +5,12 @@ from typing import Dict, Optional
 
 
 class Queue:
-    def __init__(self, queue_name: str):
+    def __init__(self, queue_name: str, default_visibility_timeout: int = 30):
         self._queue_name = queue_name
         self._queue_url = f"https://localhost:5000/queues/{self.queue_name}"
         self._created_at = datetime.datetime.now()
         self._messages = {}
+        self._default_visibility_timeout = default_visibility_timeout
 
     @property
     def queue_name(self) -> str:
@@ -27,29 +28,31 @@ class Queue:
     def messages(self):
         return self._messages
 
+    @property
+    def default_visibility_timeout(self) -> int:
+        return self._default_visibility_timeout
+
     def add_message(
         self,
         message_body: str,
         message_attributes: Dict = None,
         delay_seconds: int = 0,
-        message_system_attributes: Dict = None,
-        message_deduplication_id: str = None,
-        message_group_id: str = None,
     ) -> Message:
         message = Message(
             message_body,
             message_attributes=message_attributes,
             delay_seconds=delay_seconds,
-            message_system_attributes=message_system_attributes,
-            message_deduplication_id=message_deduplication_id,
-            message_group_id=message_group_id,
         )
         self._messages[message.message_id] = message
         return message
 
-    def get_message(self) -> Optional[Message]:
+    def get_message(self, visibility_timeout: int = None) -> Optional[Message]:
         for message_id, message in self.messages.items():
             if message.is_callable():
+                if visibility_timeout is None:
+                    message.update_deliverable_time(self.default_visibility_timeout)
+                    return message
+                message.update_deliverable_time(visibility_timeout)
                 return message
         return None
 

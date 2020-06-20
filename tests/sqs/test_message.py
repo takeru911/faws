@@ -1,5 +1,7 @@
+import datetime
 import pytest
-from faws.sqs.message import MessageAttribute, MessageAttributeType
+import unittest.mock
+from faws.sqs.message import Message, MessageAttribute, MessageAttributeType
 
 
 def test_from_request_data():
@@ -46,3 +48,29 @@ def test_from_request_data():
 def test_message_attribute_to_dict(message_attribute, expected):
     actual = message_attribute.to_dict()
     assert actual == expected
+
+
+def test_message_set_delay():
+    now = datetime.datetime(2020, 5, 28, 0, 0, 0)
+    deliverable_time = datetime.datetime(2020, 5, 28, 0, 0, 10)
+    with unittest.mock.patch("datetime.datetime") as dt:
+        dt.now.return_value = now
+        message = Message(message_body="hoge", delay_seconds=10,)
+
+    assert message.message_deliverable_time == deliverable_time
+
+
+def test_is_callable():
+    message = Message("test")
+
+    assert message.is_callable()
+    now = datetime.datetime(2020, 5, 10, 0, 0, 0)
+    now_after_delay = datetime.datetime(2020, 5, 10, 0, 0, 40)
+    # delay_secondを増やした状態で正しくcallableの値を返すか
+    with unittest.mock.patch("datetime.datetime") as dt:
+        dt.now.return_value = now
+        message = Message("test", delay_seconds=30)
+        assert not message.is_callable()
+
+        dt.now.return_value = now_after_delay
+        assert message.is_callable()

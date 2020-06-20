@@ -76,26 +76,48 @@ class MessageAttribute:
         }
 
 
-@dataclasses.dataclass
 class Message:
-    message_body: str
-    message_attributes: Optional[Dict[str, MessageAttribute]] = None
-    delay_seconds: int = 0
-    message_system_attributes: Optional[Dict] = None
-    message_deduplication_id: Optional[str] = None
-    message_group_id: Optional[str] = None
-    message_inserted_at: datetime = datetime.datetime.now()
-    message_id: str = dataclasses.field(init=False)
-    message_deliverable_time: datetime = dataclasses.field(init=False)
-
-    def __post_init__(self):
-        self.message_attributes = MessageAttribute.from_request_data(
-            self.message_attributes
+    def __init__(
+        self,
+        message_body: str,
+        message_attributes: Optional[Dict] = None,
+        delay_seconds: int = 0,
+        visibility_timeout: int = 30,
+    ):
+        self._message_body = message_body
+        self._message_attributes = MessageAttribute.from_request_data(
+            message_attributes
         )
-        self.message_id = generate_uuid()
-        self.message_deliverable_time = self.message_inserted_at + datetime.timedelta(
-            seconds=self.delay_seconds
+        self._delay_seconds = delay_seconds
+        self._message_id = generate_uuid()
+        self._message_inserted_at = datetime.datetime.now()
+        self._message_deliverable_time = self._message_inserted_at + datetime.timedelta(
+            seconds=self._delay_seconds
+        )
+        self._visibility_timeout = visibility_timeout
+
+    @property
+    def message_body(self) -> str:
+        return self._message_body
+
+    @property
+    def message_attributes(self) -> Dict[str, MessageAttribute]:
+        return self._message_attributes
+
+    @property
+    def message_id(self) -> str:
+        return self._message_id
+
+    @property
+    def message_deliverable_time(self) -> datetime:
+        return self._message_deliverable_time
+
+    def update_deliverable_time(self, visibility_timeout: int):
+        self._message_deliverable_time = datetime.datetime.now() + datetime.timedelta(
+            seconds=visibility_timeout
         )
 
-    def is_callable(self):
-        return True
+    def is_callable(self) -> bool:
+        if self._message_deliverable_time <= datetime.datetime.now():
+            return True
+        return False
