@@ -111,6 +111,11 @@ class Message:
     def message_deliverable_time(self) -> datetime:
         return self._message_deliverable_time
 
+    def update_deliverable_time(self, visibility_timeout: int):
+        self._message_deliverable_time = datetime.datetime.now() + datetime.timedelta(
+            seconds=visibility_timeout
+        )
+
     def is_callable(self) -> bool:
         if self._message_deliverable_time <= datetime.datetime.now():
             return True
