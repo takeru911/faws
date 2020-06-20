@@ -1,6 +1,7 @@
 from faws.sqs.actions import message
 import pytest
 
+
 @pytest.mark.parametrize(
     "input_, expected",
     [

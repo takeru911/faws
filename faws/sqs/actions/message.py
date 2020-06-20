@@ -4,8 +4,8 @@ from faws.sqs.message import MessageAttribute
 from typing import Dict, List
 
 
-def send_message(queues: Queues,
-        QueueUrl: str, MessageBody: str, DelaySeconds: str = 0, **kwargs
+def send_message(
+    queues: Queues, QueueUrl: str, MessageBody: str, DelaySeconds: str = 0, **kwargs
 ) -> Dict:
     queue_name = queue_name_from_queue_url(QueueUrl)
     queue = queues.get_queue(queue_name)
@@ -26,7 +26,9 @@ def send_message(queues: Queues,
     }
 
 
-def receive_message(queues: Queues, QueueUrl: str, VisibilityTimeout: str = None, **kwargs) -> Dict:
+def receive_message(
+    queues: Queues, QueueUrl: str, VisibilityTimeout: str = None, **kwargs
+) -> Dict:
     queue_name = queue_name_from_queue_url(QueueUrl)
     message_attribute_names = {
         k: v for k, v in kwargs.items() if "MessageAttribute" in k
@@ -61,7 +63,7 @@ def receive_message(queues: Queues, QueueUrl: str, VisibilityTimeout: str = None
 
 
 def select_message_attribute(
-        message_attributes: Dict[str, MessageAttribute], message_attribute_names: List[str]
+    message_attributes: Dict[str, MessageAttribute], message_attribute_names: List[str]
 ) -> Dict[str, MessageAttribute]:
     if "All" in message_attribute_names:
         return message_attributes
