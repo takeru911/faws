@@ -363,27 +363,6 @@ def test_visibility_after_receiving(uuid, client):
         )
 
 
-def test_determine_operation_raises_when_non_exist_operation():
+def test_determine_operation_raises_when_non_exist_operation(client):
     with pytest.raises(NotImplementedError):
-        server.do_operation({"Action": "NonImplementedOperation"})
-
-
-@pytest.mark.parametrize(
-    "input_, expected",
-    [
-        ("http://localhost:5000/queues/test_queue", "test_queue"),
-        ("http://localhost:5000/test_queue_1", "test_queue_1"),
-        ("http:///test_queue", "test_queue"),
-        ("https:///test_queue_1", "test_queue_1"),
-        ("https://ap-northeast-1.queue.amaz/test-queue", "test-queue"),
-    ],
-)
-def test_queue_name_from_queue_url(input_, expected):
-    actual = server.queue_name_from_queue_url(input_)
-    assert actual == expected
-
-
-def test_queue_name_from_queue_url_invalid_url():
-    invalid_url = "hoge://hugahuga/queue"
-    with pytest.raises(ValueError):
-        server.queue_name_from_queue_url(invalid_url)
+        client.post("/", data="Action=NotImplementedAction")

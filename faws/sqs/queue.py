@@ -1,7 +1,18 @@
 from __future__ import annotations
 import datetime
+import re
 from faws.sqs.message import Message
 from typing import Dict, Optional
+
+
+def name_from_url(queue_url: str) -> str:
+    if "http" not in queue_url and "https" not in queue_url:
+        raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
+    m = re.match(r"https*:\/\/.*\/(.*)", queue_url)
+
+    if len(m.groups()) != 1:
+        raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
+    return m.groups()[0]
 
 
 class Queue:
