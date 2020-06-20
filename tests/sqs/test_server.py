@@ -291,7 +291,7 @@ def test_send_set_delay_message(uuid, client):
                     "ReceiveMessageResult": {},
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                    }
+                    },
                 }
             }
         )
@@ -311,7 +311,7 @@ def test_send_set_delay_message(uuid, client):
                     },
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                    }
+                    },
                 }
             }
         )
@@ -337,7 +337,7 @@ def test_visibility_after_receiving(uuid, client):
                     "ReceiveMessageResult": {},
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                    }
+                    },
                 }
             }
         )
@@ -357,7 +357,7 @@ def test_visibility_after_receiving(uuid, client):
                     },
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                    }
+                    },
                 }
             }
         )

@@ -55,7 +55,9 @@ def get_queue_url(QueueName: str, **kwargs) -> Dict:
     return {"QueueUrl": queue.queue_url}
 
 
-def send_message(QueueUrl: str, MessageBody: str,  DelaySeconds: str = 0, **kwargs) -> Dict:
+def send_message(
+    QueueUrl: str, MessageBody: str, DelaySeconds: str = 0, **kwargs
+) -> Dict:
     queue_name = queue_name_from_queue_url(QueueUrl)
     queue = get_queues().get_queue(queue_name)
     # message_attributeは
@@ -75,14 +77,16 @@ def send_message(QueueUrl: str, MessageBody: str,  DelaySeconds: str = 0, **kwar
     }
 
 
-def receive_message(QueueUrl: str, VisibilityTimeout: str = None,**kwargs) -> Dict:
+def receive_message(QueueUrl: str, VisibilityTimeout: str = None, **kwargs) -> Dict:
     queue_name = queue_name_from_queue_url(QueueUrl)
     message_attribute_names = {
         k: v for k, v in kwargs.items() if "MessageAttribute" in k
     }
     queue = get_queues().get_queue(queue_name)
 
-    message = queue.get_message(int(VisibilityTimeout) if VisibilityTimeout is not None else None)
+    message = queue.get_message(
+        int(VisibilityTimeout) if VisibilityTimeout is not None else None
+    )
     if message is None:
         return {}
     result_data = {

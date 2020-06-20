@@ -77,12 +77,13 @@ class MessageAttribute:
 
 
 class Message:
-    def __init__(self,
-                 message_body: str,
-                 message_attributes: Optional[Dict] = None,
-                 delay_seconds: int = 0,
-                 visibility_timeout: int = 30
-                 ):
+    def __init__(
+        self,
+        message_body: str,
+        message_attributes: Optional[Dict] = None,
+        delay_seconds: int = 0,
+        visibility_timeout: int = 30,
+    ):
         self._message_body = message_body
         self._message_attributes = MessageAttribute.from_request_data(
             message_attributes
