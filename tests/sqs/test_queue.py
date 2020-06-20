@@ -1,5 +1,5 @@
 from datetime import datetime
-from faws.sqs.queue import Queue, Message
+from faws.sqs.queue import Queue, Message, name_from_url
 from unittest import mock
 import pytest
 
@@ -54,3 +54,24 @@ def test_get_message_exist_uncallable_message():
     with mock.patch("faws.sqs.message.Message.is_callable", return_value=False):
         message = queue.add_message("takerun")
         assert queue.get_message() is None
+
+
+@pytest.mark.parametrize(
+    "input_, expected",
+    [
+        ("http://localhost:5000/queues/test_queue", "test_queue"),
+        ("http://localhost:5000/test_queue_1", "test_queue_1"),
+        ("http:///test_queue", "test_queue"),
+        ("https:///test_queue_1", "test_queue_1"),
+        ("https://ap-northeast-1.queue.amaz/test-queue", "test-queue"),
+    ],
+)
+def test_queue_name_from_queue_url(input_, expected):
+    actual = name_from_url(input_)
+    assert actual == expected
+
+
+def test_queue_name_from_queue_url_invalid_url():
+    invalid_url = "hoge://hugahuga/queue"
+    with pytest.raises(ValueError):
+        name_from_url(invalid_url)

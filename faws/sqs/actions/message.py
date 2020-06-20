@@ -1,4 +1,4 @@
-import re
+from faws.sqs.queue import name_from_url
 from faws.sqs.queues import Queues
 from faws.sqs.message import MessageAttribute
 from typing import Dict, List
@@ -7,7 +7,7 @@ from typing import Dict, List
 def send_message(
     queues: Queues, QueueUrl: str, MessageBody: str, DelaySeconds: str = 0, **kwargs
 ) -> Dict:
-    queue_name = queue_name_from_queue_url(QueueUrl)
+    queue_name = name_from_url(QueueUrl)
     queue = queues.get_queue(queue_name)
     # message_attributeは
     # MessageAttribute.1.Name': 'City', 'MessageAttribute.1.Value.DataType': 'String'
@@ -29,7 +29,7 @@ def send_message(
 def receive_message(
     queues: Queues, QueueUrl: str, VisibilityTimeout: str = None, **kwargs
 ) -> Dict:
-    queue_name = queue_name_from_queue_url(QueueUrl)
+    queue_name = name_from_url(QueueUrl)
     message_attribute_names = {
         k: v for k, v in kwargs.items() if "MessageAttribute" in k
     }
@@ -52,33 +52,24 @@ def receive_message(
     if len(message_attribute_names) == 0:
         return result_data
 
-    message_attributes = select_message_attribute(
+    result_data["Message"]["MessageAttribute"] = _select_message_attribute(
         message.message_attributes, list(message_attribute_names.values())
     )
-    result_data["Message"]["MessageAttribute"] = [
-        {"Name": k, "Value": v.to_dict()} for k, v in message_attributes.items()
-    ]
 
     return result_data
 
 
-def select_message_attribute(
+def _select_message_attribute(
     message_attributes: Dict[str, MessageAttribute], message_attribute_names: List[str]
-) -> Dict[str, MessageAttribute]:
+) -> List[Dict]:
     if "All" in message_attribute_names:
-        return message_attributes
-    return {
-        attribute_name: attribute
+        return [
+            {"Name": attribute_name,  "Value": attribute.to_dict()}
+            for attribute_name, attribute in message_attributes.items()
+        ]
+
+    return [
+        {"Name": attribute_name,  "Value": attribute.to_dict()}
         for attribute_name, attribute in message_attributes.items()
         if attribute_name in message_attribute_names
-    }
-
-
-def queue_name_from_queue_url(queue_url: str) -> str:
-    if "http" not in queue_url and "https" not in queue_url:
-        raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
-    m = re.match(r"https*:\/\/.*\/(.*)", queue_url)
-
-    if len(m.groups()) != 1:
-        raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
-    return m.groups()[0]
+    ]
