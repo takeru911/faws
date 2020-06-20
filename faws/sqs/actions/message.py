@@ -64,12 +64,12 @@ def _select_message_attribute(
 ) -> List[Dict]:
     if "All" in message_attribute_names:
         return [
-            {"Name": attribute_name,  "Value": attribute.to_dict()}
+            {"Name": attribute_name, "Value": attribute.to_dict()}
             for attribute_name, attribute in message_attributes.items()
         ]
 
     return [
-        {"Name": attribute_name,  "Value": attribute.to_dict()}
+        {"Name": attribute_name, "Value": attribute.to_dict()}
         for attribute_name, attribute in message_attributes.items()
         if attribute_name in message_attribute_names
     ]
