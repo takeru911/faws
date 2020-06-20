@@ -3,6 +3,7 @@ from faws.sqs.queue import Queue, Message
 from unittest import mock
 import pytest
 
+
 def test_equal():
     now = datetime(2020, 5, 28, 0, 0, 0)
     with mock.patch("datetime.datetime") as dt:

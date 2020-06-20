@@ -55,7 +55,7 @@ def get_queue_url(QueueName: str, **kwargs) -> Dict:
     return {"QueueUrl": queue.queue_url}
 
 
-def send_message(QueueUrl: str, MessageBody: str, **kwargs) -> Dict:
+def send_message(QueueUrl: str, MessageBody: str,  DelaySeconds: str = 0, **kwargs) -> Dict:
     queue_name = queue_name_from_queue_url(QueueUrl)
     queue = get_queues().get_queue(queue_name)
     # message_attributeは
@@ -65,7 +65,7 @@ def send_message(QueueUrl: str, MessageBody: str, **kwargs) -> Dict:
     message = queue.add_message(
         MessageBody,
         message_attributes=message_attributes,
-        delay_seconds=int(kwargs.get("DelaySeconds", "0")),
+        delay_seconds=int(DelaySeconds),
     )
 
     return {

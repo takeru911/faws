@@ -1,3 +1,4 @@
+import datetime
 import pytest
 from dict2xml import dict2xml
 from unittest import mock
@@ -31,8 +32,8 @@ def get_queue_url(client, queue_name):
     return client.post("/", data=f"Action=GetQueueUrl&QueueName={queue_name}")
 
 
-def send_message(client, queue_url, message, message_attributes=None):
-    data = f"Action=SendMessage&QueueUrl={queue_url}&MessageBody={message}"
+def send_message(client, queue_url, message, message_attributes=None, delay_seconds=0):
+    data = f"Action=SendMessage&QueueUrl={queue_url}&MessageBody={message}&DelaySeconds={delay_seconds}"
     if message_attributes is None:
         return client.post("/", data=data)
     message_attributes_data = "&".join(
@@ -267,6 +268,50 @@ def test_receive_message_with_attribute(uuid, client, attribute_names_pattern):
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                     },
+                }
+            }
+        )
+
+
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_send_set_delay_message(uuid, client):
+    now = datetime.datetime(2020, 5, 1, 0, 0, 0)
+    deliverable_time = datetime.datetime(2020, 5, 1, 0, 0, 40)
+    queue_name = "test_send_set_delay_message"
+    queue_url = f"http://localhost/queues/{queue_name}"
+    create_queue(client, queue_name)
+    with mock.patch("datetime.datetime") as dt:
+        dt.now.return_value = now
+        send_message(client, queue_url=queue_url, message="test", delay_seconds=30)
+        response = receive_message(client, queue_url=queue_url)
+        # 配信遅延させたので結果はない
+        assert response.data == dict2xml_bytes(
+            {
+                "ReceiveMessageResponse": {
+                    "ReceiveMessageResult": {},
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    }
+                }
+            }
+        )
+        # 配信可能な時間に変更し、結果が返るかを確認
+        dt.now.return_value = deliverable_time
+        response = receive_message(client, queue_url=queue_url)
+        assert response.data == dict2xml_bytes(
+            {
+                "ReceiveMessageResponse": {
+                    "ReceiveMessageResult": {
+                            "Message": {
+                                "MessageId": "725275ae-0b9b-4762-b238-436d7c65a1ac",
+                                "ReceiptHandle": "barbar",
+                                "MD5OFBody": "hogehoge",
+                                "Body": "test",
+                            },
+                    },
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    }
                 }
             }
         )
