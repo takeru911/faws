@@ -75,14 +75,14 @@ def send_message(QueueUrl: str, MessageBody: str,  DelaySeconds: str = 0, **kwar
     }
 
 
-def receive_message(QueueUrl: str, **kwargs) -> Dict:
+def receive_message(QueueUrl: str, VisibilityTimeout: str = None,**kwargs) -> Dict:
     queue_name = queue_name_from_queue_url(QueueUrl)
     message_attribute_names = {
         k: v for k, v in kwargs.items() if "MessageAttribute" in k
     }
     queue = get_queues().get_queue(queue_name)
 
-    message = queue.get_message()
+    message = queue.get_message(int(VisibilityTimeout) if VisibilityTimeout is not None else None)
     if message is None:
         return {}
     result_data = {
@@ -93,17 +93,17 @@ def receive_message(QueueUrl: str, **kwargs) -> Dict:
             "Body": message.message_body,
         }
     }
+
     if len(message_attribute_names) == 0:
-        message.update_deliverable_time(queue.default_visibility_timeout)
         return result_data
+
     message_attributes = select_message_attribute(
         message.message_attributes, list(message_attribute_names.values())
     )
     result_data["Message"]["MessageAttribute"] = [
         {"Name": k, "Value": v.to_dict()} for k, v in message_attributes.items()
     ]
-    # メッセージの配信可能時間を現時刻 + Queueのデフォルト可視性タイムアウトで更新する
-    message.update_deliverable_time(queue.default_visibility_timeout)
+
     return result_data
 
 

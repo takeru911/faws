@@ -46,9 +46,13 @@ class Queue:
         self._messages[message.message_id] = message
         return message
 
-    def get_message(self) -> Optional[Message]:
+    def get_message(self, visibility_timeout: int = None) -> Optional[Message]:
         for message_id, message in self.messages.items():
             if message.is_callable():
+                if visibility_timeout is None:
+                    message.update_deliverable_time(self.default_visibility_timeout)
+                    return message
+                message.update_deliverable_time(visibility_timeout)
                 return message
         return None
 

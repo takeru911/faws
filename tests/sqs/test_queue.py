@@ -26,13 +26,18 @@ def test_add_message(dt, delay_seconds):
     assert message.message_id in queue.messages and message.message_deliverable_time == expected_deliverable_time
 
 
-def test_get_message():
+@pytest.mark.parametrize(
+    "visibility_timeout,deliverable_second", [(0, 0), (None, 30), (45, 45)]
+)
+def test_get_message(visibility_timeout, deliverable_second):
     queue = Queue("test-queue")
-
-    with mock.patch("uuid.uuid4", return_value="1111"):
+    now = datetime(2020, 5, 1, 0, 0, 0)
+    with mock.patch("uuid.uuid4", return_value="1111"), mock.patch("datetime.datetime") as dt:
+        dt.now.return_value = now
         message = queue.add_message("takerun")
 
-        assert queue.get_message() == message
+        assert queue.get_message(visibility_timeout) == message \
+            and message.message_deliverable_time == datetime(2020, 5, 1, 0, 0, deliverable_second)
 
 
 def test_get_message_exist_uncallable_message():
