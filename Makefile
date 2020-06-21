@@ -10,10 +10,10 @@ test/%:
 	poetry run pytest tests/$*
 
 test-cov/all:
-	poetry run pytest -v --cov=faws --cov-report=term-missing
+	poetry run pytest --cov=faws --cov-report=term-missing
 
 test-cov/%:
-	poetry run pytest -v --cov=faws/$* --cov-report=term-missing
+	poetry run pytest --cov=faws/$* --cov-report=term-missing
 
 format:
 	@black faws
