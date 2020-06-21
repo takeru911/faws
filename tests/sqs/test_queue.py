@@ -23,10 +23,7 @@ def test_add_message(dt, delay_seconds):
     dt.now.return_value = now
     queue = Queue("test-queue")
     message = queue.add_message("takerun", delay_seconds=delay_seconds)
-    assert (
-        message.message_id in queue.messages
-        and message.message_deliverable_time == expected_deliverable_time
-    )
+    assert message.message_deliverable_time == expected_deliverable_time
 
 
 @pytest.mark.parametrize(

@@ -5,7 +5,11 @@ from typing import Dict, List
 
 
 def send_message(
-    queues: QueueStorage, QueueUrl: str, MessageBody: str, DelaySeconds: str = 0, **kwargs
+    queues: QueueStorage,
+    QueueUrl: str,
+    MessageBody: str,
+    DelaySeconds: str = 0,
+    **kwargs
 ) -> Dict:
     queue_name = name_from_url(QueueUrl)
     queue = queues.get_queue(queue_name)
