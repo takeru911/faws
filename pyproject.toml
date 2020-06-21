@@ -12,6 +12,7 @@ dict2xml = "^1.7.0"
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.3"
 pytest-cov = "^2.10.0"
+codecov = "^2.1.7"
 
 [build-system]
 requires = ["poetry>=0.12"]
