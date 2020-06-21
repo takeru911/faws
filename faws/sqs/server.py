@@ -24,7 +24,7 @@ def get_queues():
     if "queues" not in g:
         g.queues = build_queues_storage(
             current_app.config["QueuesStorageType"],
-            **current_app.config.get("QueuesStorageTypeConfig", {})
+            **current_app.config.get("QueuesStorageTypeConfig", {}),
         )
 
         return g.queues

@@ -1,6 +1,11 @@
 import pytest
 from faws.sqs.message import Message
-from faws.sqs.message_storage import MessageStorageType, MessageStorage, InMemoryMessageStorage,build_message_storage
+from faws.sqs.message_storage import (
+    MessageStorageType,
+    MessageStorage,
+    InMemoryMessageStorage,
+    build_message_storage,
+)
 
 
 @pytest.fixture
