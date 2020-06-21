@@ -25,4 +25,4 @@ jobs:
           make test-cov/all
       - name: Push CodeCov
         run: |
-          make push push-codecov CODECOV_TOKEN=${{ secrets.CODECOV_TOKEN }}
+          make push-codecov CODECOV_TOKEN=${{ secrets.CODECOV_TOKEN }}
