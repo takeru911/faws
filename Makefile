@@ -15,6 +15,9 @@ test-cov/all:
 test-cov/%:
 	poetry run pytest --cov=faws/$* --cov-report=term-missing
 
+push-codecov:
+	poetry run codecov --token $(CODECOV_TOKEN)
+
 format:
 	@black faws
 	@black tests

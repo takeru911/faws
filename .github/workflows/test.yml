@@ -20,3 +20,9 @@ jobs:
       - name: Run Test
         run: |
           make test/all
+      - name: Run Test Codecoverage
+        run: |
+          make test-cov/all
+      - name: Push CodeCov
+        run: |
+          make push push-codecov CODECOV_TOKEN=${{ secrets.CODECOV_TOKEN }}
