@@ -5,11 +5,11 @@ from faws.sqs import Queue
 from typing import List, Optional
 
 
-def build_queues_storage(storage_type: QueueStorageType, **kwargs) -> QueuesStorage:
+def build_queues_storage(storage_type: QueueStorageType, **kwargs) -> QueueStorage:
     return storage_type.value(**kwargs)
 
 
-class QueuesStorage:
+class QueueStorage:
     def __init__(self, **kwargs):
         pass
 
@@ -35,7 +35,7 @@ class QueuesStorage:
         raise NotImplementedError
 
 
-class InMemoryQueuesStorage(QueuesStorage):
+class InMemoryQueueStorage(QueueStorage):
     _queues = {}
 
     def __init__(self, **kwargs):
@@ -47,13 +47,13 @@ class InMemoryQueuesStorage(QueuesStorage):
 
     @property
     def queues(self):
-        return InMemoryQueuesStorage._queues
+        return InMemoryQueueStorage._queues
 
     def create_queue(self, queue_name: str) -> Queue:
         if queue_name in self.queues:
             return self.queues[queue_name]
         queue = Queue(queue_name=queue_name)
-        InMemoryQueuesStorage._queues[queue_name] = queue
+        InMemoryQueueStorage._queues[queue_name] = queue
 
         return queue
 
@@ -65,4 +65,4 @@ class InMemoryQueuesStorage(QueuesStorage):
 
 
 class QueuesStorageType(enum.Enum):
-    IN_MEMORY = InMemoryQueuesStorage
+    IN_MEMORY = InMemoryQueueStorage

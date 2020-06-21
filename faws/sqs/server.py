@@ -2,7 +2,7 @@ from flask import Flask, request, Response, g, current_app
 from faws.sqs.actions.message import send_message, receive_message
 from faws.sqs.actions.queue import create_queue, get_queue_url, get_list_queues
 from typing import Dict
-from faws.sqs.queues import Queues, QueuesStorageType
+from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
 from dict2xml import dict2xml
 import dataclasses
 import urllib
@@ -17,15 +17,16 @@ class Result:
 
 def init_queues():
     queues = get_queues()
-    queues.init_queues()
+    queues.init_storage()
 
 
 def get_queues():
     if "queues" not in g:
-        g.queues = Queues(
+        g.queues = build_queues_storage(
             current_app.config["QueuesStorageType"],
-            **current_app.config.get("QueuesStorageTypeConfig", {}),
+            **current_app.config.get("QueuesStorageTypeConfig", {})
         )
+
         return g.queues
     return g.queues
 

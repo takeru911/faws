@@ -3,7 +3,7 @@ import pytest
 from dict2xml import dict2xml
 from unittest import mock
 from faws.sqs import server
-from faws.sqs.queues import QueuesStorageType
+from faws.sqs.queue_storage import QueuesStorageType
 
 
 @pytest.fixture
