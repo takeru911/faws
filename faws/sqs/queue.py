@@ -2,6 +2,7 @@ from __future__ import annotations
 import datetime
 import re
 from faws.sqs.message import Message
+from faws.sqs.message_storage import build_message_storage, MessageStorageType
 from typing import Dict, Optional
 
 
@@ -20,7 +21,7 @@ class Queue:
         self._queue_name = queue_name
         self._queue_url = f"https://localhost:5000/queues/{self.queue_name}"
         self._created_at = datetime.datetime.now()
-        self._messages = {}
+        self._messages = build_message_storage(MessageStorageType.IN_MEMORY)
         self._default_visibility_timeout = default_visibility_timeout
 
     @property
@@ -34,10 +35,6 @@ class Queue:
     @property
     def created_at(self) -> datetime:
         return self._created_at
-
-    @property
-    def messages(self):
-        return self._messages
 
     @property
     def default_visibility_timeout(self) -> int:
@@ -54,11 +51,12 @@ class Queue:
             message_attributes=message_attributes,
             delay_seconds=delay_seconds,
         )
-        self._messages[message.message_id] = message
-        return message
+
+        return self._messages.add_message(message)
 
     def get_message(self, visibility_timeout: int = None) -> Optional[Message]:
-        for message_id, message in self.messages.items():
+        messages = self._messages.get_messages()
+        for message in messages:
             if message.is_callable():
                 if visibility_timeout is None:
                     message.update_deliverable_time(self.default_visibility_timeout)
