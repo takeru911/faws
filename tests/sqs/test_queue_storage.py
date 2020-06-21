@@ -2,7 +2,7 @@ import datetime
 
 from pytest import fixture
 from faws.sqs import Queue
-from faws.sqs.queues_storage import InMemoryQueuesStorage
+from faws.sqs.queue_storage import InMemoryQueueStorage
 from unittest import mock
 
 
@@ -10,7 +10,7 @@ class TestInMemoryQueuesStorage:
     @fixture
     def added_queues(self):
         created_at = datetime.datetime(2020, 5, 28, 0, 0, 0)
-        queues_storage = InMemoryQueuesStorage()
+        queues_storage = InMemoryQueueStorage()
         with mock.patch("datetime.datetime") as mock_datetime:
             mock_datetime.now.return_value = created_at
             queues_storage.create_queue("test_queue")
@@ -26,7 +26,7 @@ class TestInMemoryQueuesStorage:
             return queue
 
     def test_create_queue(self):
-        queues_storage = InMemoryQueuesStorage()
+        queues_storage = InMemoryQueueStorage()
         queue_name = "test_queue"
         now = datetime.datetime(2020, 5, 28, 0, 0, 0)
         with mock.patch("datetime.datetime") as mock_datetime:
