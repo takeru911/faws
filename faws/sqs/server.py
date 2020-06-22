@@ -1,6 +1,6 @@
 from flask import Flask, request, Response, g, current_app
 from faws.sqs.actions.message import send_message, receive_message
-from faws.sqs.actions.queue import create_queue, get_queue_url, get_list_queues
+from faws.sqs.actions.queue import create_queue, get_queue_url, get_list_queues, delete_queue
 from typing import Dict
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
 from dict2xml import dict2xml
@@ -49,10 +49,13 @@ def do_operation(request_data: Dict) -> Result:
         return Result(action, get_queue_url(queues, **request_data))
     if action == "CreateQueue":
         return Result(action, create_queue(queues, **request_data))
+    if action == "DeleteQueue":
+        return Result(action, delete_queue(queues, **request_data))
     if action == "SendMessage":
         return Result(action, send_message(queues, **request_data))
     if action == "ReceiveMessage":
         return Result(action, receive_message(queues, **request_data))
+
     raise NotImplementedError()
 
 
