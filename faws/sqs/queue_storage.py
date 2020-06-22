@@ -34,6 +34,10 @@ class QueueStorage:
     def get_queue(self, queue_name: str) -> Queue:
         raise NotImplementedError
 
+    @abstractmethod
+    def delete_queue(self, queue_name: str):
+        raise NotImplementedError
+
 
 class InMemoryQueueStorage(QueueStorage):
     _queues = {}
@@ -62,6 +66,12 @@ class InMemoryQueueStorage(QueueStorage):
 
     def get_queue(self, queue_name: str) -> Optional[Queue]:
         return self.queues.get(queue_name)
+
+    def delete_queue(self, queue_name: str):
+        if queue_name not in self._queues:
+            return ""
+        del self._queues[queue_name]
+        return ""
 
 
 class QueuesStorageType(enum.Enum):
