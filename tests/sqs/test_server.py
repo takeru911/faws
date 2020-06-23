@@ -85,6 +85,20 @@ def test_do_list_queues(uuid, client):
 
 
 @mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_list_queues_non_exists(uuid, client):
+    assert list_queues(client).data == dict2xml_bytes(
+        {
+            "ListQueuesResponse": {
+                "ListQueuesResult": {},
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                },
+            }
+        }
+    )
+
+
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
 def test_do_create_queue(uuid, client):
     response = create_queue(client, "test-queue")
 
@@ -123,7 +137,9 @@ def test_do_get_queue_url(uuid, client):
 @mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
 def test_do_delete_queue(uuid, client):
     create_queue(client, "test_queue")
-    assert delete_queue(client, "http://localhost:5000/queues/test_queue").data == dict2xml_bytes(
+    assert delete_queue(
+        client, "http://localhost:5000/queues/test_queue"
+    ).data == dict2xml_bytes(
         {
             "DeleteQueueResponse": {
                 "DeleteQueueResult": {},
@@ -133,7 +149,6 @@ def test_do_delete_queue(uuid, client):
             }
         }
     )
-
 
 
 @mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
