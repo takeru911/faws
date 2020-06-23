@@ -70,14 +70,6 @@ def run_request_to_index(request):
 
     result = do_operation(request_data)
 
-    if result.result_data is None:
-        return dict2xml(
-            {
-                f"{result.operation_name}Response": {
-                    "ResponseMetadata": {"RequestId": request_id},
-                }
-            }
-        )
     return dict2xml(
         {
             f"{result.operation_name}Response": {
