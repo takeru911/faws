@@ -10,7 +10,8 @@ def create_queue(queues: QueueStorage, QueueName: str, **kwargs) -> Dict:
 
 def get_list_queues(queues: QueueStorage, **kwargs) -> Dict:
     queue_urls = [queue.queue_url for queue in queues.get_queues()]
-
+    if len(queue_urls) == 0:
+        return {}
     return {"QueueUrl": queue_urls}
 
 

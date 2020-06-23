@@ -64,7 +64,16 @@ def run_request_to_index(request):
     request_data = parse_request_data(request.get_data().decode(encoding="utf-8"))
 
     result = do_operation(request_data)
-    response_data = dict2xml(
+
+    if result.result_data is None:
+        return dict2xml(
+            {
+                f"{result.operation_name}Response": {
+                    "ResponseMetadata": {"RequestId": request_id},
+                }
+            }
+        )
+    return dict2xml(
         {
             f"{result.operation_name}Response": {
                 f"{result.operation_name}Result": result.result_data,
@@ -72,7 +81,6 @@ def run_request_to_index(request):
             }
         }
     )
-    return response_data
 
 
 def create_app(app_config: Dict = None):

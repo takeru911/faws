@@ -85,6 +85,21 @@ def test_do_list_queues(uuid, client):
 
 
 @mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_list_queues_non_exists(uuid, client):
+    assert list_queues(client).data == dict2xml_bytes(
+        {
+            "ListQueuesResponse": {
+                "ListQueuesResult": {
+                },
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                },
+            }
+        }
+    )
+
+
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
 def test_do_create_queue(uuid, client):
     response = create_queue(client, "test-queue")
 
