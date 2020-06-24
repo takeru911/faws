@@ -1,7 +1,8 @@
 import datetime
 
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 from faws.sqs import Queue
+from faws.sqs.error import NonExistentQueue
 from faws.sqs.queue_storage import InMemoryQueueStorage
 from unittest import mock
 
@@ -69,7 +70,8 @@ class TestInMemoryQueuesStorage:
     def test_delete_queue_exist_queue(self, added_queues):
         queue_name = "test_queue"
         added_queues.delete_queue(queue_name)
-        assert added_queues.get_queue(queue_name) is None
+        with raises(NonExistentQueue):
+            added_queues.get_queue(queue_name)
 
     def test_delete_queue_not_exist_queue(self, added_queues):
         queue_name = "ten"

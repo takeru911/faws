@@ -19,13 +19,15 @@ import uuid
 class Result:
     operation_name: str
     result_data: Dict
+    request_id: str
+    response_code: int = 200
 
-    def generate_response(self, request_id: str) -> str:
+    def generate_response(self) -> str:
         return dict2xml(
             {
                 f"{self.operation_name}Response": {
                     f"{self.operation_name}Result": self.result_data,
-                    "ResponseMetadata": {"RequestId": request_id},
+                    "ResponseMetadata": {"RequestId": self.request_id},
                 }
             }
         )
@@ -34,8 +36,10 @@ class Result:
 @dataclasses.dataclass()
 class ErrorResult:
     error: NonExistentQueue
+    request_id: str
+    response_code: int = 400
 
-    def generate_response(self, request_id: str) -> str:
+    def generate_response(self) -> str:
         return dict2xml(
             {
                 f"ErrorResponse": {
@@ -45,7 +49,7 @@ class ErrorResult:
                         "Message": self.error.message,
                         "Detail": {}
                     },
-                    "ResponseMetadata": {"RequestId": request_id},
+                    "ResponseMetadata": {"RequestId": self.request_id},
                 },
             }
         )
@@ -76,24 +80,24 @@ def parse_request_data(request_data: str):
     return parsed_data
 
 
-def do_operation(request_data: Dict) -> Result:
+def do_operation(request_data: Dict, request_id: str) -> Result:
     action = request_data["Action"]
     queues = get_queues()
     try:
         if action == "ListQueues":
-            return Result(action, get_list_queues(queues, **request_data))
+            return Result(action, get_list_queues(queues, **request_data), request_id)
         if action == "GetQueueUrl":
-            return Result(action, get_queue_url(queues, **request_data))
+            return Result(action, get_queue_url(queues, **request_data), request_id)
         if action == "CreateQueue":
-            return Result(action, create_queue(queues, **request_data))
+            return Result(action, create_queue(queues, **request_data), request_id)
         if action == "DeleteQueue":
-            return Result(action, delete_queue(queues, **request_data))
+            return Result(action, delete_queue(queues, **request_data), request_id)
         if action == "SendMessage":
-            return Result(action, send_message(queues, **request_data))
+            return Result(action, send_message(queues, **request_data), request_id)
         if action == "ReceiveMessage":
-            return Result(action, receive_message(queues, **request_data))
+            return Result(action, receive_message(queues, **request_data), request_id)
     except NonExistentQueue as e:
-        return ErrorResult(e)
+        return ErrorResult(e, request_id)
 
     raise NotImplementedError()
 
@@ -102,9 +106,9 @@ def run_request_to_index(request):
     request_id = uuid.uuid4()
     request_data = parse_request_data(request.get_data().decode(encoding="utf-8"))
 
-    result = do_operation(request_data)
+    result = do_operation(request_data, request_id)
 
-    return result.generate_response(request_id)
+    return result
 
 
 def create_app(app_config: Dict = None):
@@ -116,6 +120,6 @@ def create_app(app_config: Dict = None):
     @app.route("/", methods=["POST"])
     def index():
         response_data = run_request_to_index(request)
-        return Response(response_data, mimetype="text/xml")
+        return Response(response_data.generate_response(), mimetype="text/xml", status=response_data.response_code)
 
     return app

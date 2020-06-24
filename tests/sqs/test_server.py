@@ -4,6 +4,8 @@ from dict2xml import dict2xml
 from unittest import mock
 from faws.sqs import server
 from faws.sqs.queue_storage import QueuesStorageType
+from faws.sqs.server import Result, ErrorResult
+from faws.sqs.error import NonExistentQueue
 
 
 @pytest.fixture
@@ -132,6 +134,27 @@ def test_do_get_queue_url(uuid, client):
             }
         }
     )
+
+
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_get_queue_url_non_exist(uuid, client):
+    create_queue(client, "test_queue_1")
+    response = get_queue_url(client, "test_queue")
+    assert response.data == dict2xml_bytes(
+        {
+            "ErrorResponse": {
+                "Error": {
+                    "Type": "Sender",
+                    "Code": "AWS.SimpleQueueService.NonExistentQueue",
+                    "Message": "The specified queue does not exist for this wsdl version.",
+                    "Detail": {}
+                },
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                },
+            }
+        }
+    ) and response.status_code == 400
 
 
 @mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
@@ -401,3 +424,41 @@ def test_visibility_after_receiving(uuid, client):
 def test_determine_operation_raises_when_non_exist_operation(client):
     with pytest.raises(NotImplementedError):
         client.post("/", data="Action=NotImplementedAction")
+
+
+def test_result():
+    result = Result(operation_name="test", result_data={"test_result": "hoge"}, request_id="111")
+
+    assert result.generate_response() == dict2xml(
+        {
+            "testResponse": {
+                "testResult": {
+                    "test_result": "hoge"
+                },
+                "ResponseMetadata": {
+                    "RequestId": "111"
+                }
+            }
+        }
+    )
+
+
+def test_error_result():
+    result = ErrorResult(NonExistentQueue(), request_id="111")
+
+    assert result.generate_response() == dict2xml(
+        {
+            "ErrorResponse": {
+                "Error": {
+                    "Type": "Sender",
+                    "Code": "AWS.SimpleQueueService.NonExistentQueue",
+                    "Message": "The specified queue does not exist for this wsdl version.",
+                    "Detail": {}
+                },
+                "ResponseMetadata": {
+                    "RequestId": "111"
+                }
+            }
+        }
+    )
+
