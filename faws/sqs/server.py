@@ -6,6 +6,7 @@ from faws.sqs.actions.queue import (
     get_list_queues,
     delete_queue,
 )
+from faws.sqs.error import NonExistentQueue
 from typing import Dict
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
 from dict2xml import dict2xml
@@ -18,6 +19,36 @@ import uuid
 class Result:
     operation_name: str
     result_data: Dict
+
+    def generate_response(self, request_id: str) -> str:
+        return dict2xml(
+            {
+                f"{self.operation_name}Response": {
+                    f"{self.operation_name}Result": self.result_data,
+                    "ResponseMetadata": {"RequestId": request_id},
+                }
+            }
+        )
+
+
+@dataclasses.dataclass()
+class ErrorResult:
+    error: NonExistentQueue
+
+    def generate_response(self, request_id: str) -> str:
+        return dict2xml(
+            {
+                f"ErrorResponse": {
+                    "Error": {
+                        "Type": "Sender",
+                        "Code": f"AWS.SimpleQueueService.{self.error.__class__.__name__}",
+                        "Message": self.error.message,
+                        "Detail": {}
+                    },
+                    "ResponseMetadata": {"RequestId": request_id},
+                },
+            }
+        )
 
 
 def init_queues():
@@ -48,18 +79,21 @@ def parse_request_data(request_data: str):
 def do_operation(request_data: Dict) -> Result:
     action = request_data["Action"]
     queues = get_queues()
-    if action == "ListQueues":
-        return Result(action, get_list_queues(queues, **request_data))
-    if action == "GetQueueUrl":
-        return Result(action, get_queue_url(queues, **request_data))
-    if action == "CreateQueue":
-        return Result(action, create_queue(queues, **request_data))
-    if action == "DeleteQueue":
-        return Result(action, delete_queue(queues, **request_data))
-    if action == "SendMessage":
-        return Result(action, send_message(queues, **request_data))
-    if action == "ReceiveMessage":
-        return Result(action, receive_message(queues, **request_data))
+    try:
+        if action == "ListQueues":
+            return Result(action, get_list_queues(queues, **request_data))
+        if action == "GetQueueUrl":
+            return Result(action, get_queue_url(queues, **request_data))
+        if action == "CreateQueue":
+            return Result(action, create_queue(queues, **request_data))
+        if action == "DeleteQueue":
+            return Result(action, delete_queue(queues, **request_data))
+        if action == "SendMessage":
+            return Result(action, send_message(queues, **request_data))
+        if action == "ReceiveMessage":
+            return Result(action, receive_message(queues, **request_data))
+    except NonExistentQueue as e:
+        return ErrorResult(e)
 
     raise NotImplementedError()
 
@@ -70,14 +104,7 @@ def run_request_to_index(request):
 
     result = do_operation(request_data)
 
-    return dict2xml(
-        {
-            f"{result.operation_name}Response": {
-                f"{result.operation_name}Result": result.result_data,
-                "ResponseMetadata": {"RequestId": request_id},
-            }
-        }
-    )
+    return result.generate_response(request_id)
 
 
 def create_app(app_config: Dict = None):
