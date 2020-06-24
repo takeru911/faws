@@ -2,6 +2,7 @@ from __future__ import annotations
 import enum
 from abc import abstractmethod
 from faws.sqs import Queue
+from faws.sqs.error import NonExistentQueue
 from typing import List, Optional
 
 
@@ -65,6 +66,8 @@ class InMemoryQueueStorage(QueueStorage):
         return list(self.queues.values())
 
     def get_queue(self, queue_name: str) -> Optional[Queue]:
+        if queue_name not in self.queues:
+            raise NonExistentQueue()
         return self.queues.get(queue_name)
 
     def delete_queue(self, queue_name: str):
