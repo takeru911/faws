@@ -140,21 +140,25 @@ def test_do_get_queue_url(uuid, client):
 def test_do_get_queue_url_non_exist(uuid, client):
     create_queue(client, "test_queue_1")
     response = get_queue_url(client, "test_queue")
-    assert response.data == dict2xml_bytes(
-        {
-            "ErrorResponse": {
-                "Error": {
-                    "Type": "Sender",
-                    "Code": "AWS.SimpleQueueService.NonExistentQueue",
-                    "Message": "The specified queue does not exist for this wsdl version.",
-                    "Detail": {}
-                },
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
+    assert (
+        response.data
+        == dict2xml_bytes(
+            {
+                "ErrorResponse": {
+                    "Error": {
+                        "Type": "Sender",
+                        "Code": "AWS.SimpleQueueService.NonExistentQueue",
+                        "Message": "The specified queue does not exist for this wsdl version.",
+                        "Detail": {},
+                    },
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
             }
-        }
-    ) and response.status_code == 400
+        )
+        and response.status_code == 400
+    )
 
 
 @mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
@@ -427,17 +431,15 @@ def test_determine_operation_raises_when_non_exist_operation(client):
 
 
 def test_result():
-    result = Result(operation_name="test", result_data={"test_result": "hoge"}, request_id="111")
+    result = Result(
+        operation_name="test", result_data={"test_result": "hoge"}, request_id="111"
+    )
 
     assert result.generate_response() == dict2xml(
         {
             "testResponse": {
-                "testResult": {
-                    "test_result": "hoge"
-                },
-                "ResponseMetadata": {
-                    "RequestId": "111"
-                }
+                "testResult": {"test_result": "hoge"},
+                "ResponseMetadata": {"RequestId": "111"},
             }
         }
     )
@@ -453,12 +455,9 @@ def test_error_result():
                     "Type": "Sender",
                     "Code": "AWS.SimpleQueueService.NonExistentQueue",
                     "Message": "The specified queue does not exist for this wsdl version.",
-                    "Detail": {}
+                    "Detail": {},
                 },
-                "ResponseMetadata": {
-                    "RequestId": "111"
-                }
+                "ResponseMetadata": {"RequestId": "111"},
             }
         }
     )
-

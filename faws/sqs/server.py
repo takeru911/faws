@@ -47,7 +47,7 @@ class ErrorResult:
                         "Type": "Sender",
                         "Code": f"AWS.SimpleQueueService.{self.error.__class__.__name__}",
                         "Message": self.error.message,
-                        "Detail": {}
+                        "Detail": {},
                     },
                     "ResponseMetadata": {"RequestId": self.request_id},
                 },
@@ -120,6 +120,10 @@ def create_app(app_config: Dict = None):
     @app.route("/", methods=["POST"])
     def index():
         response_data = run_request_to_index(request)
-        return Response(response_data.generate_response(), mimetype="text/xml", status=response_data.response_code)
+        return Response(
+            response_data.generate_response(),
+            mimetype="text/xml",
+            status=response_data.response_code,
+        )
 
     return app
