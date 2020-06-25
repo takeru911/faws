@@ -6,7 +6,7 @@ from faws.sqs.actions.queue import (
     get_list_queues,
     delete_queue,
 )
-from faws.sqs.error import NonExistentQueue
+from faws.sqs.error import SQSError
 from typing import Dict
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
 from dict2xml import dict2xml
@@ -35,7 +35,7 @@ class Result:
 
 @dataclasses.dataclass()
 class ErrorResult:
-    error: NonExistentQueue
+    error: SQSError
     request_id: str
     response_code: int = 400
 
@@ -96,7 +96,7 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
             return Result(action, send_message(queues, **request_data), request_id)
         if action == "ReceiveMessage":
             return Result(action, receive_message(queues, **request_data), request_id)
-    except NonExistentQueue as e:
+    except SQSError as e:
         return ErrorResult(e, request_id)
 
     raise NotImplementedError()
