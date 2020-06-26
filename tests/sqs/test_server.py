@@ -1,7 +1,7 @@
 import datetime
 import pytest
-from dict2xml import dict2xml
 from unittest import mock
+from dict2xml import dict2xml
 from faws.sqs import server
 from faws.sqs.queue_storage import QueuesStorageType
 from faws.sqs.server import Result, ErrorResult

@@ -1,9 +1,9 @@
 from __future__ import annotations
 from abc import abstractmethod
 from enum import Enum
-from .message import Message
 from collections import OrderedDict
 from typing import List
+from faws.sqs.message import Message
 
 
 def build_message_storage(

@@ -1,4 +1,9 @@
+import dataclasses
+import urllib
+import uuid
+from dict2xml import dict2xml
 from flask import Flask, request, Response, g, current_app
+from typing import Dict
 from faws.sqs.actions.message import send_message, receive_message
 from faws.sqs.actions.queue import (
     create_queue,
@@ -7,12 +12,7 @@ from faws.sqs.actions.queue import (
     delete_queue,
 )
 from faws.sqs.error import SQSError
-from typing import Dict
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
-from dict2xml import dict2xml
-import dataclasses
-import urllib
-import uuid
 
 
 @dataclasses.dataclass()

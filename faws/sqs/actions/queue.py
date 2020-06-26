@@ -1,6 +1,6 @@
+from typing import Dict
 from faws.sqs.queue import name_from_url
 from faws.sqs.queue_storage import QueueStorage
-from typing import Dict
 
 
 def create_queue(queues: QueueStorage, QueueName: str, **kwargs) -> Dict:

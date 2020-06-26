@@ -1,9 +1,9 @@
 from __future__ import annotations
 import enum
 from abc import abstractmethod
+from typing import List, Optional
 from faws.sqs import Queue
 from faws.sqs.error import NonExistentQueue
-from typing import List, Optional
 
 
 def build_queues_storage(storage_type: QueueStorageType, **kwargs) -> QueueStorage:

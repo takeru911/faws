@@ -1,5 +1,5 @@
 from datetime import datetime
-from faws.sqs.queue import Queue, Message, name_from_url
+from faws.sqs.queue import Queue, name_from_url
 from unittest import mock
 import pytest
 
