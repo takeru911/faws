@@ -1,6 +1,5 @@
 import datetime
-
-from pytest import fixture, mark, raises
+from pytest import fixture, raises
 from faws.sqs import Queue
 from faws.sqs.error import NonExistentQueue
 from faws.sqs.queue_storage import InMemoryQueueStorage

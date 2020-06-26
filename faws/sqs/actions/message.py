@@ -1,7 +1,7 @@
+from typing import Dict, List
+from faws.sqs.message import MessageAttribute
 from faws.sqs.queue import name_from_url
 from faws.sqs.queue_storage import QueueStorage
-from faws.sqs.message import MessageAttribute
-from typing import Dict, List
 
 
 def send_message(

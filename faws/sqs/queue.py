@@ -1,9 +1,9 @@
 from __future__ import annotations
 import datetime
 import re
+from typing import Dict, Optional
 from faws.sqs.message import Message
 from faws.sqs.message_storage import build_message_storage, MessageStorageType
-from typing import Dict, Optional
 
 
 def name_from_url(queue_url: str) -> str:
