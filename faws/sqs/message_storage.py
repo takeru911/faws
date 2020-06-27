@@ -21,6 +21,10 @@ class MessageStorage:
     def add_message(self, message: Message):
         raise NotImplementedError
 
+    @abstractmethod
+    def truncate_messages(self):
+        raise NotImplementedError
+
 
 class InMemoryMessageStorage(MessageStorage):
     def __init__(self, **kwargs):
@@ -34,6 +38,9 @@ class InMemoryMessageStorage(MessageStorage):
     def add_message(self, message: Message):
         self._messages[message.message_id] = message
         return self._messages[message.message_id]
+
+    def truncate_messages(self):
+        self._messages = OrderedDict()
 
 
 class MessageStorageType(Enum):

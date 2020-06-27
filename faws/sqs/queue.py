@@ -65,6 +65,9 @@ class Queue:
                 return message
         return None
 
+    def purge_message(self):
+        self._messages.truncate_messages()
+
     def __eq__(self, other: Queue) -> bool:
         return (
             self.queue_url == other.queue_url

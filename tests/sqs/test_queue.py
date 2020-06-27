@@ -72,3 +72,10 @@ def test_queue_name_from_queue_url_invalid_url():
     invalid_url = "hoge://hugahuga/queue"
     with pytest.raises(ValueError):
         name_from_url(invalid_url)
+
+
+def test_purge_message():
+    queue = Queue("test-queue")
+    queue.add_message("hoge")
+    queue.purge_message()
+    assert queue.get_message() is None
