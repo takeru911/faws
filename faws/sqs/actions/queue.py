@@ -22,11 +22,10 @@ def get_queue_url(queues: QueueStorage, QueueName: str, **kwargs) -> Dict:
 
 def delete_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
     queue_name = name_from_url(queue_url=QueueUrl)
-    return queues.delete_queue(queue_name)
+    queues.delete_queue(queue_name)
 
 
 def purge_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
     queue_name = name_from_url(queue_url=QueueUrl)
     queue = queues.get_queue(queue_name)
     queue.purge_message()
-    return ""

@@ -173,7 +173,6 @@ def test_do_delete_queue(uuid, client):
     ).data == dict2xml_bytes(
         {
             "DeleteQueueResponse": {
-                "DeleteQueueResult": {},
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                 },
@@ -190,7 +189,6 @@ def test_do_purge_queue(uuid, client):
     ).data == dict2xml_bytes(
         {
             "PurgeQueueResponse": {
-                "PurgeQueueResult": {},
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                 },
@@ -451,19 +449,30 @@ def test_determine_operation_raises_when_non_exist_operation(client):
         client.post("/", data="Action=NotImplementedAction")
 
 
-def test_result():
-    result = Result(
-        operation_name="test", result_data={"test_result": "hoge"}, request_id="111"
-    )
-
-    assert result.generate_response() == dict2xml(
-        {
-            "testResponse": {
-                "testResult": {"test_result": "hoge"},
-                "ResponseMetadata": {"RequestId": "111"},
-            }
-        }
-    )
+@pytest.mark.parametrize(
+    "result,response",
+    [
+        (
+            Result(
+                operation_name="test",
+                result_data={"test_result": "hoge"},
+                request_id="111",
+            ),
+            {
+                "testResponse": {
+                    "testResult": {"test_result": "hoge"},
+                    "ResponseMetadata": {"RequestId": "111"},
+                }
+            },
+        ),
+        (
+            Result(operation_name="test", result_data=None, request_id="111"),
+            {"testResponse": {"ResponseMetadata": {"RequestId": "111"},}},
+        ),
+    ],
+)
+def test_result(result, response):
+    assert result.generate_response() == dict2xml(response)
 
 
 def test_error_result():

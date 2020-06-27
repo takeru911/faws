@@ -74,6 +74,8 @@ class TestInMemoryQueuesStorage:
 
     def test_delete_queue_not_exist_queue(self, added_queues):
         queue_name = "ten"
-        added_queues.delete_queue(queue_name)
+        # 存在しないqueueをクエリするので例外が発生する
+        with raises(NonExistentQueue):
+            added_queues.delete_queue(queue_name)
         # 存在しているqueueを消していないか
         assert added_queues.get_queue("test_queue") is not None

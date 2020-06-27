@@ -3,7 +3,7 @@ import urllib
 import uuid
 from dict2xml import dict2xml
 from flask import Flask, request, Response, g, current_app
-from typing import Dict
+from typing import Dict, Optional
 from faws.sqs.actions.message import send_message, receive_message
 from faws.sqs.actions.queue import (
     create_queue,
@@ -19,15 +19,23 @@ from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
 @dataclasses.dataclass()
 class Result:
     operation_name: str
-    result_data: Dict
+    result_data: Optional[Dict]
     request_id: str
     response_code: int = 200
 
     def generate_response(self) -> str:
+        if self.result_data is not None:
+            return dict2xml(
+                {
+                    f"{self.operation_name}Response": {
+                        f"{self.operation_name}Result": self.result_data,
+                        "ResponseMetadata": {"RequestId": self.request_id},
+                    }
+                }
+            )
         return dict2xml(
             {
                 f"{self.operation_name}Response": {
-                    f"{self.operation_name}Result": self.result_data,
                     "ResponseMetadata": {"RequestId": self.request_id},
                 }
             }
