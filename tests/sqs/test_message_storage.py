@@ -21,7 +21,9 @@ class InMemoryMessageStorageTest:
         assert actual.__class__ == InMemoryMessageStorage
 
     @pytest.mark.parametrize("limit,offset", [(30, 0), (10, 30)])
-    def test_get_messages(self, in_memory_messages: MessageStorage, limit: int, offset: int):
+    def test_get_messages(
+        self, in_memory_messages: MessageStorage, limit: int, offset: int
+    ):
         messages = in_memory_messages.get_messages(limit, offset)
         actual_message_ids = ",".join([message.message_body for message in messages])
         expected = ",".join(str(i) for i in list(range(offset, limit)))
@@ -38,4 +40,3 @@ class InMemoryMessageStorageTest:
         in_memory_messages.truncate_messages()
 
         assert len(in_memory_messages._messages) == 0
-

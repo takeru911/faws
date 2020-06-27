@@ -5,7 +5,7 @@ from faws.sqs.actions.queue import (
     get_queue_url,
     get_list_queues,
     delete_queue,
-    purge_queue
+    purge_queue,
 )
 from faws.sqs.error import SQSError
 from typing import Dict
