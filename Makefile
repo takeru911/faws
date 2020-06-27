@@ -19,5 +19,7 @@ push-codecov:
 	poetry run codecov --token $(CODECOV_TOKEN)
 
 format:
+	@echo format faws
 	@black faws
+	@echo format tests
 	@black tests
