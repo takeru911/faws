@@ -70,11 +70,10 @@ class InMemoryQueueStorage(QueueStorage):
             raise NonExistentQueue()
         return self.queues.get(queue_name)
 
-    def delete_queue(self, queue_name: str):
-        if queue_name not in self._queues:
-            return ""
+    def delete_queue(self, queue_name: str) -> bool:
+        self.get_queue(queue_name)
         del self._queues[queue_name]
-        return ""
+        return True
 
 
 class QueuesStorageType(enum.Enum):
