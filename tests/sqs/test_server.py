@@ -38,6 +38,10 @@ def delete_queue(client, queue_url):
     return client.post("/", data=f"Action=DeleteQueue&QueueUrl={queue_url}")
 
 
+def purge_queue(client, queue_url):
+    return client.post("/", data=f"Action=PurgeQueue&QueueUrl={queue_url}")
+
+
 def send_message(client, queue_url, message, message_attributes=None, delay_seconds=0):
     data = f"Action=SendMessage&QueueUrl={queue_url}&MessageBody={message}&DelaySeconds={delay_seconds}"
     if message_attributes is None:
@@ -170,6 +174,23 @@ def test_do_delete_queue(uuid, client):
         {
             "DeleteQueueResponse": {
                 "DeleteQueueResult": {},
+                "ResponseMetadata": {
+                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                },
+            }
+        }
+    )
+
+
+@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
+def test_do_purge_queue(uuid, client):
+    create_queue(client, "test_queue")
+    assert purge_queue(
+        client, "http://localhost:5000/queues/test_queue"
+    ).data == dict2xml_bytes(
+        {
+            "PurgeQueueResponse": {
+                "PurgeQueueResult": {},
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                 },

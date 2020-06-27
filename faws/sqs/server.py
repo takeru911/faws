@@ -10,6 +10,7 @@ from faws.sqs.actions.queue import (
     get_queue_url,
     get_list_queues,
     delete_queue,
+    purge_queue,
 )
 from faws.sqs.error import SQSError
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
@@ -92,6 +93,8 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
             return Result(action, create_queue(queues, **request_data), request_id)
         if action == "DeleteQueue":
             return Result(action, delete_queue(queues, **request_data), request_id)
+        if action == "PurgeQueue":
+            return Result(action, purge_queue(queues, **request_data), request_id)
         if action == "SendMessage":
             return Result(action, send_message(queues, **request_data), request_id)
         if action == "ReceiveMessage":
