@@ -11,8 +11,9 @@ def name_from_url(queue_url: str) -> str:
         raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
     m = re.match(r"https*://.*/(.*)", queue_url)
 
-    if len(m.groups()) != 1:
+    if m is None:
         raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
+
     return m.groups()[0]
 
 
