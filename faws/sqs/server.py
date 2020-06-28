@@ -1,9 +1,7 @@
-import dataclasses
 import urllib
 import uuid
-from dict2xml import dict2xml
 from flask import Flask, request, Response, g, current_app
-from typing import Dict, Optional
+from typing import Dict
 from faws.sqs.actions.message import send_message, receive_message
 from faws.sqs.actions.queue import (
     create_queue,
@@ -14,54 +12,7 @@ from faws.sqs.actions.queue import (
 )
 from faws.sqs.error import SQSError
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
-
-
-@dataclasses.dataclass()
-class Result:
-    operation_name: str
-    result_data: Optional[Dict]
-    request_id: str
-    response_code: int = 200
-
-    def generate_response(self) -> str:
-        if self.result_data is not None:
-            return dict2xml(
-                {
-                    f"{self.operation_name}Response": {
-                        f"{self.operation_name}Result": self.result_data,
-                        "ResponseMetadata": {"RequestId": self.request_id},
-                    }
-                }
-            )
-        return dict2xml(
-            {
-                f"{self.operation_name}Response": {
-                    "ResponseMetadata": {"RequestId": self.request_id},
-                }
-            }
-        )
-
-
-@dataclasses.dataclass()
-class ErrorResult:
-    error: SQSError
-    request_id: str
-    response_code: int = 400
-
-    def generate_response(self) -> str:
-        return dict2xml(
-            {
-                f"ErrorResponse": {
-                    "Error": {
-                        "Type": "Sender",
-                        "Code": f"AWS.SimpleQueueService.{self.error.__class__.__name__}",
-                        "Message": self.error.message,
-                        "Detail": {},
-                    },
-                    "ResponseMetadata": {"RequestId": self.request_id},
-                },
-            }
-        )
+from faws.sqs.result import Result, ErrorResult, SuccessResult
 
 
 def init_queues():
@@ -94,28 +45,42 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
     queues = get_queues()
     try:
         if action == "ListQueues":
-            return Result(action, get_list_queues(queues, **request_data), request_id)
+            return SuccessResult(
+                action, get_list_queues(queues, **request_data), request_id
+            )
         if action == "GetQueueUrl":
-            return Result(action, get_queue_url(queues, **request_data), request_id)
+            return SuccessResult(
+                action, get_queue_url(queues, **request_data), request_id
+            )
         if action == "CreateQueue":
-            return Result(action, create_queue(queues, **request_data), request_id)
+            return SuccessResult(
+                action, create_queue(queues, **request_data), request_id
+            )
         if action == "DeleteQueue":
-            return Result(action, delete_queue(queues, **request_data), request_id)
+            return SuccessResult(
+                action, delete_queue(queues, **request_data), request_id
+            )
         if action == "PurgeQueue":
-            return Result(action, purge_queue(queues, **request_data), request_id)
+            return SuccessResult(
+                action, purge_queue(queues, **request_data), request_id
+            )
         if action == "SendMessage":
-            return Result(action, send_message(queues, **request_data), request_id)
+            return SuccessResult(
+                action, send_message(queues, **request_data), request_id
+            )
         if action == "ReceiveMessage":
-            return Result(action, receive_message(queues, **request_data), request_id)
+            return SuccessResult(
+                action, receive_message(queues, **request_data), request_id
+            )
     except SQSError as e:
         return ErrorResult(e, request_id)
 
     raise NotImplementedError()
 
 
-def run_request_to_index(request):
-    request_id = uuid.uuid4()
-    request_data = parse_request_data(request.get_data().decode(encoding="utf-8"))
+def run_request_to_index(request_):
+    request_id = str(uuid.uuid4())
+    request_data = parse_request_data(request_.get_data().decode(encoding="utf-8"))
 
     result = do_operation(request_data, request_id)
 

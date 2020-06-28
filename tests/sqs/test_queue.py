@@ -49,7 +49,7 @@ def test_get_message_exist_uncallable_message():
     queue = Queue("test-queue")
 
     with mock.patch("faws.sqs.message.Message.is_callable", return_value=False):
-        message = queue.add_message("takerun")
+        queue.add_message("takerun")
         assert queue.get_message() is None
 
 
@@ -61,6 +61,7 @@ def test_get_message_exist_uncallable_message():
         ("http:///test_queue", "test_queue"),
         ("https:///test_queue_1", "test_queue_1"),
         ("https://ap-northeast-1.queue.amaz/test-queue", "test-queue"),
+        ("https://ap-northeast-1.queue.amaz/", ""),
     ],
 )
 def test_queue_name_from_queue_url(input_, expected):
@@ -68,8 +69,8 @@ def test_queue_name_from_queue_url(input_, expected):
     assert actual == expected
 
 
-def test_queue_name_from_queue_url_invalid_url():
-    invalid_url = "hoge://hugahuga/queue"
+@pytest.mark.parametrize("invalid_url", ["hoge://hugahuga/queue", "http://hoge"])
+def test_queue_name_from_queue_url_invalid_url(invalid_url):
     with pytest.raises(ValueError):
         name_from_url(invalid_url)
 
