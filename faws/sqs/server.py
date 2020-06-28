@@ -64,9 +64,9 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
     raise NotImplementedError()
 
 
-def run_request_to_index(request):
-    request_id = uuid.uuid4()
-    request_data = parse_request_data(request.get_data().decode(encoding="utf-8"))
+def run_request_to_index(request_):
+    request_id = str(uuid.uuid4())
+    request_data = parse_request_data(request_.get_data().decode(encoding="utf-8"))
 
     result = do_operation(request_data, request_id)
 
