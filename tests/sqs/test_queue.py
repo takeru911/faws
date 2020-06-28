@@ -49,7 +49,7 @@ def test_get_message_exist_uncallable_message():
     queue = Queue("test-queue")
 
     with mock.patch("faws.sqs.message.Message.is_callable", return_value=False):
-        message = queue.add_message("takerun")
+        queue.add_message("takerun")
         assert queue.get_message() is None
 
 
