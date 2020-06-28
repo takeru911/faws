@@ -6,7 +6,6 @@ from abc import abstractmethod
 
 
 class Result:
-
     @property
     def response_code(self):
         raise NotImplementedError

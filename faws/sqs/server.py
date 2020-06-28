@@ -45,19 +45,33 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
     queues = get_queues()
     try:
         if action == "ListQueues":
-            return SuccessResult(action, get_list_queues(queues, **request_data), request_id)
+            return SuccessResult(
+                action, get_list_queues(queues, **request_data), request_id
+            )
         if action == "GetQueueUrl":
-            return SuccessResult(action, get_queue_url(queues, **request_data), request_id)
+            return SuccessResult(
+                action, get_queue_url(queues, **request_data), request_id
+            )
         if action == "CreateQueue":
-            return SuccessResult(action, create_queue(queues, **request_data), request_id)
+            return SuccessResult(
+                action, create_queue(queues, **request_data), request_id
+            )
         if action == "DeleteQueue":
-            return SuccessResult(action, delete_queue(queues, **request_data), request_id)
+            return SuccessResult(
+                action, delete_queue(queues, **request_data), request_id
+            )
         if action == "PurgeQueue":
-            return SuccessResult(action, purge_queue(queues, **request_data), request_id)
+            return SuccessResult(
+                action, purge_queue(queues, **request_data), request_id
+            )
         if action == "SendMessage":
-            return SuccessResult(action, send_message(queues, **request_data), request_id)
+            return SuccessResult(
+                action, send_message(queues, **request_data), request_id
+            )
         if action == "ReceiveMessage":
-            return SuccessResult(action, receive_message(queues, **request_data), request_id)
+            return SuccessResult(
+                action, receive_message(queues, **request_data), request_id
+            )
     except SQSError as e:
         return ErrorResult(e, request_id)
 

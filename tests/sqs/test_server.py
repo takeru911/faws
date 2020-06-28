@@ -196,8 +196,9 @@ def test_do_purge_queue(client):
 
 def test_do_send_message(client):
     create_queue(client, "test_queue_1")
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
-            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ):
         assert send_message(
             client, queue_url="http://localhost/quueus/test_queue_1", message="taker"
         ).data == dict2xml_bytes(
@@ -218,8 +219,9 @@ def test_do_send_message(client):
 
 def test_send_message_with_attribute(client):
     create_queue(client, "test_queue_1")
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
-            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ):
         assert send_message(
             client,
             "http://localhost:5000/queues/test_queue_1",
@@ -266,8 +268,9 @@ def test_receive_message_non_attribute(client):
     queue_name = "test_receive_queue"
     create_queue(client, queue_name)
     queue_url = f"http://localhost/queues/{queue_name}"
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
-            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ):
         send_message(client, queue_url, "hogehoge")
         assert receive_message(client, queue_url).data == dict2xml_bytes(
             {
@@ -299,8 +302,9 @@ def test_receive_message_with_attribute(client, attribute_names_pattern):
     queue_name = "test_receive_queue_attr"
     queue_url = f"http://localhost/queues/{queue_name}"
     create_queue(client, queue_name)
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
-            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ):
         send_message(
             client,
             queue_url,

@@ -8,21 +8,21 @@ from faws.sqs.result import SuccessResult, ErrorResult
     "result,response",
     [
         (
-                SuccessResult(
-                    operation_name="test",
-                    result_data={"test_result": "hoge"},
-                    request_id="111",
-                ),
-                {
-                    "testResponse": {
-                        "testResult": {"test_result": "hoge"},
-                        "ResponseMetadata": {"RequestId": "111"},
-                    }
-                },
+            SuccessResult(
+                operation_name="test",
+                result_data={"test_result": "hoge"},
+                request_id="111",
+            ),
+            {
+                "testResponse": {
+                    "testResult": {"test_result": "hoge"},
+                    "ResponseMetadata": {"RequestId": "111"},
+                }
+            },
         ),
         (
-                SuccessResult(operation_name="test", result_data=None, request_id="111"),
-                {"testResponse": {"ResponseMetadata": {"RequestId": "111"}}},
+            SuccessResult(operation_name="test", result_data=None, request_id="111"),
+            {"testResponse": {"ResponseMetadata": {"RequestId": "111"}}},
         ),
     ],
 )
