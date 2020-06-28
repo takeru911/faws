@@ -4,8 +4,6 @@ from unittest import mock
 from dict2xml import dict2xml
 from faws.sqs import server
 from faws.sqs.queue_storage import QueuesStorageType
-from faws.sqs.server import Result, ErrorResult
-from faws.sqs.error import NonExistentQueue
 
 
 @pytest.fixture
@@ -69,91 +67,19 @@ def test_parse_request_data():
     assert actual == expected
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_list_queues(uuid, client):
+def test_do_list_queues(client):
+
     create_queue(client, "test_queue_1")
     create_queue(client, "test_queue_2")
-    assert list_queues(client).data == dict2xml_bytes(
-        {
-            "ListQueuesResponse": {
-                "ListQueuesResult": {
-                    "QueueUrl": [
-                        "https://localhost:5000/queues/test_queue_1",
-                        "https://localhost:5000/queues/test_queue_2",
-                    ]
-                },
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
-            }
-        }
-    )
-
-
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_list_queues_non_exists(uuid, client):
-    assert list_queues(client).data == dict2xml_bytes(
-        {
-            "ListQueuesResponse": {
-                "ListQueuesResult": {},
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
-            }
-        }
-    )
-
-
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_create_queue(uuid, client):
-    response = create_queue(client, "test-queue")
-
-    assert response.data == dict2xml_bytes(
-        {
-            "CreateQueueResponse": {
-                "CreateQueueResult": {
-                    "QueueUrl": f"https://localhost:5000/queues/test-queue"
-                },
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
-            }
-        }
-    )
-
-
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_get_queue_url(uuid, client):
-    create_queue(client, "test_queue_1")
-
-    assert get_queue_url(client, "test_queue_1").data == dict2xml_bytes(
-        {
-            "GetQueueUrlResponse": {
-                "GetQueueUrlResult": {
-                    "QueueUrl": f"https://localhost:5000/queues/test_queue_1"
-                },
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
-            }
-        }
-    )
-
-
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_get_queue_url_non_exist(uuid, client):
-    create_queue(client, "test_queue_1")
-    response = get_queue_url(client, "test_queue")
-    assert (
-        response.data
-        == dict2xml_bytes(
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        assert list_queues(client).data == dict2xml_bytes(
             {
-                "ErrorResponse": {
-                    "Error": {
-                        "Type": "Sender",
-                        "Code": "AWS.SimpleQueueService.NonExistentQueue",
-                        "Message": "The specified queue does not exist for this wsdl version.",
-                        "Detail": {},
+                "ListQueuesResponse": {
+                    "ListQueuesResult": {
+                        "QueueUrl": [
+                            "https://localhost:5000/queues/test_queue_1",
+                            "https://localhost:5000/queues/test_queue_2",
+                        ]
                     },
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
@@ -161,46 +87,117 @@ def test_do_get_queue_url_non_exist(uuid, client):
                 }
             }
         )
-        and response.status_code == 400
-    )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_delete_queue(uuid, client):
-    create_queue(client, "test_queue")
-    assert delete_queue(
-        client, "http://localhost:5000/queues/test_queue"
-    ).data == dict2xml_bytes(
-        {
-            "DeleteQueueResponse": {
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
+def test_do_list_queues_non_exists(client):
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        assert list_queues(client).data == dict2xml_bytes(
+            {
+                "ListQueuesResponse": {
+                    "ListQueuesResult": {},
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
             }
-        }
-    )
+        )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_purge_queue(uuid, client):
-    create_queue(client, "test_queue")
-    assert purge_queue(
-        client, "http://localhost:5000/queues/test_queue"
-    ).data == dict2xml_bytes(
-        {
-            "PurgeQueueResponse": {
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
+def test_do_create_queue(client):
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        response = create_queue(client, "test-queue")
+        assert response.data == dict2xml_bytes(
+            {
+                "CreateQueueResponse": {
+                    "CreateQueueResult": {
+                        "QueueUrl": f"https://localhost:5000/queues/test-queue"
+                    },
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
             }
-        }
-    )
+        )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_send_message(uuid, client):
+def test_do_get_queue_url(client):
     create_queue(client, "test_queue_1")
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        assert get_queue_url(client, "test_queue_1").data == dict2xml_bytes(
+            {
+                "GetQueueUrlResponse": {
+                    "GetQueueUrlResult": {
+                        "QueueUrl": f"https://localhost:5000/queues/test_queue_1"
+                    },
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+
+def test_do_get_queue_url_non_exist(client):
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        create_queue(client, "test_queue_1")
+        response = get_queue_url(client, "test_queue")
+        assert (
+            response.data
+            == dict2xml_bytes(
+                {
+                    "ErrorResponse": {
+                        "Error": {
+                            "Type": "Sender",
+                            "Code": "AWS.SimpleQueueService.NonExistentQueue",
+                            "Message": "The specified queue does not exist for this wsdl version.",
+                            "Detail": {},
+                        },
+                        "ResponseMetadata": {
+                            "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                        },
+                    }
+                }
+            )
+            and response.status_code == 400
+        )
+
+
+def test_do_delete_queue(client):
+    create_queue(client, "test_queue")
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        assert delete_queue(
+            client, "http://localhost:5000/queues/test_queue"
+        ).data == dict2xml_bytes(
+            {
+                "DeleteQueueResponse": {
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+
+def test_do_purge_queue(client):
+    create_queue(client, "test_queue")
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        assert purge_queue(
+            client, "http://localhost:5000/queues/test_queue"
+        ).data == dict2xml_bytes(
+            {
+                "PurgeQueueResponse": {
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+
+def test_do_send_message(client):
+    create_queue(client, "test_queue_1")
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
+            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
         assert send_message(
             client, queue_url="http://localhost/quueus/test_queue_1", message="taker"
         ).data == dict2xml_bytes(
@@ -219,10 +216,10 @@ def test_do_send_message(uuid, client):
         )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_send_message_with_attribute(uuid, client):
+def test_send_message_with_attribute(client):
     create_queue(client, "test_queue_1")
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
+            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
         assert send_message(
             client,
             "http://localhost:5000/queues/test_queue_1",
@@ -248,29 +245,29 @@ def test_send_message_with_attribute(uuid, client):
         )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_do_receive_message_non_message(uuid, client):
+def test_do_receive_message_non_message(client):
     create_queue(client, "test_receive_queue")
-    assert receive_message(
-        client, "http://localhost:5000/queues/test_receive_queue"
-    ).data == dict2xml_bytes(
-        {
-            "ReceiveMessageResponse": {
-                "ReceiveMessageResult": {},
-                "ResponseMetadata": {
-                    "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
-                },
+    with mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
+        assert receive_message(
+            client, "http://localhost:5000/queues/test_receive_queue"
+        ).data == dict2xml_bytes(
+            {
+                "ReceiveMessageResponse": {
+                    "ReceiveMessageResult": {},
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
             }
-        }
-    )
+        )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
-def test_receive_message_non_attribute(uuid, client):
+def test_receive_message_non_attribute(client):
     queue_name = "test_receive_queue"
     create_queue(client, queue_name)
     queue_url = f"http://localhost/queues/{queue_name}"
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
+            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
         send_message(client, queue_url, "hogehoge")
         assert receive_message(client, queue_url).data == dict2xml_bytes(
             {
@@ -291,19 +288,19 @@ def test_receive_message_non_attribute(uuid, client):
         )
 
 
-@mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac")
 @pytest.mark.parametrize(
     "attribute_names_pattern",
     [
         {"MessageAttribute.1.Name": "v1", "MessageAttribute.2.Name": "v2"},
-        {"MessageAttribute.1.Name": "All",},
+        {"MessageAttribute.1.Name": "All"},
     ],
 )
-def test_receive_message_with_attribute(uuid, client, attribute_names_pattern):
+def test_receive_message_with_attribute(client, attribute_names_pattern):
     queue_name = "test_receive_queue_attr"
     queue_url = f"http://localhost/queues/{queue_name}"
     create_queue(client, queue_name)
-    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"):
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), \
+            mock.patch("uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"):
         send_message(
             client,
             queue_url,
@@ -447,47 +444,3 @@ def test_visibility_after_receiving(uuid, client):
 def test_determine_operation_raises_when_non_exist_operation(client):
     with pytest.raises(NotImplementedError):
         client.post("/", data="Action=NotImplementedAction")
-
-
-@pytest.mark.parametrize(
-    "result,response",
-    [
-        (
-            Result(
-                operation_name="test",
-                result_data={"test_result": "hoge"},
-                request_id="111",
-            ),
-            {
-                "testResponse": {
-                    "testResult": {"test_result": "hoge"},
-                    "ResponseMetadata": {"RequestId": "111"},
-                }
-            },
-        ),
-        (
-            Result(operation_name="test", result_data=None, request_id="111"),
-            {"testResponse": {"ResponseMetadata": {"RequestId": "111"},}},
-        ),
-    ],
-)
-def test_result(result, response):
-    assert result.generate_response() == dict2xml(response)
-
-
-def test_error_result():
-    result = ErrorResult(NonExistentQueue(), request_id="111")
-
-    assert result.generate_response() == dict2xml(
-        {
-            "ErrorResponse": {
-                "Error": {
-                    "Type": "Sender",
-                    "Code": "AWS.SimpleQueueService.NonExistentQueue",
-                    "Message": "The specified queue does not exist for this wsdl version.",
-                    "Detail": {},
-                },
-                "ResponseMetadata": {"RequestId": "111"},
-            }
-        }
-    )
