@@ -6,7 +6,7 @@ from faws.sqs import Queue
 from faws.sqs.error import NonExistentQueue
 
 
-def build_queues_storage(storage_type: QueueStorageType, **kwargs) -> QueueStorage:
+def build_queues_storage(storage_type: QueuesStorageType, **kwargs) -> QueueStorage:
     return storage_type.value(**kwargs)
 
 
