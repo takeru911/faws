@@ -9,7 +9,7 @@ from faws.sqs.message_storage import build_message_storage, MessageStorageType
 def name_from_url(queue_url: str) -> str:
     if "http" not in queue_url and "https" not in queue_url:
         raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
-    m = re.match(r"https*:\/\/.*\/(.*)", queue_url)
+    m = re.match(r"https*://.*/(.*)", queue_url)
 
     if len(m.groups()) != 1:
         raise ValueError(f"The address {queue_url} is not valid for this endpoint.")
