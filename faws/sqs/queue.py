@@ -57,7 +57,7 @@ class Queue:
 
         return self._messages.add_message(message)
 
-    def get_message(self, visibility_timeout: int = None) -> Optional[Message]:
+    def get_message(self, max_number_of_messages: int = 1, visibility_timeout: int = None) -> Optional[Message]:
         messages = self._messages.get_messages()
         for message in messages:
             if message.is_callable():
