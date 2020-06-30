@@ -24,6 +24,7 @@ class Queue:
         self._created_at = datetime.datetime.now()
         self._messages = build_message_storage(MessageStorageType.IN_MEMORY)
         self._default_visibility_timeout = default_visibility_timeout
+        self._tags = {}
 
     @property
     def queue_name(self) -> str:
@@ -68,6 +69,9 @@ class Queue:
 
     def purge_message(self):
         self._messages.truncate_messages()
+
+    def set_tag(self, tag_name, tag_value):
+        self._tags[tag_name] = tag_value
 
     def __eq__(self, other: Queue) -> bool:
         return (

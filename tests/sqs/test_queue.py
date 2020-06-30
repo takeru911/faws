@@ -80,3 +80,10 @@ def test_purge_message():
     queue.add_message("hoge")
     queue.purge_message()
     assert queue.get_message() is None
+
+
+def test_set_tag():
+    queue = Queue("test-queue")
+    queue.set_tag("key", "value")
+
+    assert queue._tags == {"key": "value"}

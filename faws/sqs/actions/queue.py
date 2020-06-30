@@ -29,3 +29,10 @@ def purge_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
     queue_name = name_from_url(queue_url=QueueUrl)
     queue = queues.get_queue(queue_name)
     queue.purge_message()
+
+
+def tag_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
+    queue_name = name_from_url(queue_url=QueueUrl)
+    queue = queues.get_queue(queue_name)
+    tags = {k: v for k, v in kwargs.items() if "Tag" in k}
+    queue.set_tag(tags)
