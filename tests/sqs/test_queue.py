@@ -1,5 +1,5 @@
 from datetime import datetime
-from faws.sqs.queue import Queue, name_from_url
+from faws.sqs.queue import Queue, name_from_url, Tag
 from unittest import mock
 import pytest
 
@@ -84,6 +84,17 @@ def test_purge_message():
 
 def test_set_tag():
     queue = Queue("test-queue")
-    queue.set_tag("key", "value")
+    tag = Tag("key", "value")
+    queue.set_tag(tag)
 
-    assert queue._tags == {"key": "value"}
+    assert queue._tags == {tag.name: tag}
+
+
+def test_list_tags():
+    queue = Queue("test-queue")
+    tag = Tag("key", "value")
+    queue.set_tag(tag)
+
+    assert queue.list_tags() == [
+        tag
+    ]

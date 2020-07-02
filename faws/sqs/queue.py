@@ -1,7 +1,8 @@
 from __future__ import annotations
+import dataclasses
 import datetime
 import re
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from faws.sqs.message import Message
 from faws.sqs.message_storage import build_message_storage, MessageStorageType
 
@@ -70,8 +71,11 @@ class Queue:
     def purge_message(self):
         self._messages.truncate_messages()
 
-    def set_tag(self, tag_name, tag_value):
-        self._tags[tag_name] = tag_value
+    def set_tag(self, tag: Tag):
+        self._tags[tag.name] = tag
+
+    def list_tags(self) -> List[Tag]:
+        return list(self._tags.values())
 
     def __eq__(self, other: Queue) -> bool:
         return (
@@ -79,3 +83,9 @@ class Queue:
             and self.queue_name == other.queue_name
             and self.created_at == other.created_at
         )
+
+
+@dataclasses.dataclass()
+class Tag:
+    name: str
+    value: str

@@ -1,5 +1,5 @@
 from typing import Dict, List
-from faws.sqs.queue import name_from_url
+from faws.sqs.queue import name_from_url, Tag
 from faws.sqs.queue_storage import QueueStorage
 
 
@@ -39,7 +39,17 @@ def tag_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
     # {"Tag.1.Key": "key_name", "Tag.1.Value": "value"...}
     tags = {k: v for k, v in kwargs.items() if "Tag" in k}
     for tag_name, tag_value in tags.items():
-        queue.set_tag(tag_name, tag_value)
+        queue.set_tag(Tag(tag_name, tag_value))
+
+
+def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> List[Dict]:
+    queue_name = name_from_url(queue_url=QueueUrl)
+    queue = queues.get_queue(queue_name)
+    tags = queue.list_tags()
+
+    return [
+        {"Key": tag.name, "Value": tag.value} for tag in tags
+    ]
 
 
 def _parse_tag_request_data(request_tags: Dict) -> List[Dict]:
