@@ -1,5 +1,5 @@
-from typing import Dict
-from faws.sqs.queue import name_from_url
+from typing import Dict, List
+from faws.sqs.queue import name_from_url, Tag
 from faws.sqs.queue_storage import QueueStorage
 
 
@@ -29,3 +29,34 @@ def purge_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
     queue_name = name_from_url(queue_url=QueueUrl)
     queue = queues.get_queue(queue_name)
     queue.purge_message()
+
+
+def tag_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
+    queue_name = name_from_url(queue_url=QueueUrl)
+    queue = queues.get_queue(queue_name)
+    # tagのrequest dataはTag.1.Key=key_name, Tag.1.Value=value
+    # そのため、まずはkwargsにあるTag.*をkvのdictにする
+    # {"Tag.1.Key": "key_name", "Tag.1.Value": "value"...}
+    tags = {k: v for k, v in kwargs.items() if "Tag" in k}
+    parsed_tags = _parse_tag_request_data(tags)
+    for tag in parsed_tags:
+        queue.set_tag(tag)
+
+
+def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> Dict:
+    queue_name = name_from_url(queue_url=QueueUrl)
+    queue = queues.get_queue(queue_name)
+    tags = queue.list_tags()
+
+    return {"Tag": [{"Key": tag.name, "Value": tag.value} for tag in tags]}
+
+
+def _parse_tag_request_data(request_tags: Dict) -> List[Tag]:
+    tags = []
+    # tagのrequest dataはTag.1.Key: "key_name", Tag.1.Value: "value"
+    # そのため、要素数を2で割りtagの数を取り出す
+    for i in range(1, int(len(request_tags) / 2) + 1):
+        tag_name = request_tags[f"Tag.{i}.Key"]
+        tag_value = request_tags[f"Tag.{i}.Value"]
+        tags.append(Tag(tag_name, tag_value))
+    return tags
