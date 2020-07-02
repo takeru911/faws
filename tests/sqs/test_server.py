@@ -1,6 +1,7 @@
 import datetime
 import pytest
 from unittest import mock
+from typing import Dict
 from dict2xml import dict2xml
 from faws.sqs import server
 from faws.sqs.queue_storage import QueuesStorageType
@@ -38,6 +39,14 @@ def delete_queue(client, queue_url):
 
 def purge_queue(client, queue_url):
     return client.post("/", data=f"Action=PurgeQueue&QueueUrl={queue_url}")
+
+
+def tag_queue(client, queue_url, tags: Dict):
+    data = f"Action=QueueTag&QueueUrl={queue_url}"
+    tag_data = "&".join(
+        [f"{k}={v}" for k, v in tags.items()]
+    )
+    return client.post("/", data=data + "&" + tag_data)
 
 
 def send_message(client, queue_url, message, message_attributes=None, delay_seconds=0):
@@ -194,10 +203,29 @@ def test_do_purge_queue(client):
         )
 
 
+def test_do_tag_queue(client):
+    create_queue(client, "test_queue_1")
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
+            "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ):
+        assert tag_queue(client, queue_url="http://localhost/quueus/test_queue_1", tags={
+            "Tag.1.Key": "tag_name", "Tag.1.Value": "tag_value",
+            "Tag.2.Key": "tag_name_2", "Tag.2.Value": "tag_value_2",
+        }).data == dict2xml_bytes(
+            {
+                "TagQueueResponse": {
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+
 def test_do_send_message(client):
     create_queue(client, "test_queue_1")
     with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
-        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+            "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
     ):
         assert send_message(
             client, queue_url="http://localhost/quueus/test_queue_1", message="taker"
