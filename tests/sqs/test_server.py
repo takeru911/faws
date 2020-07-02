@@ -239,7 +239,7 @@ def test_do_list_queue(client):
         assert list_queue_tags(client, queue_url).data == dict2xml_bytes(
             {
                 "ListQueueTagsResponse": {
-                    "ListQueueTagResult": {
+                    "ListQueueTagsResult": {
                         "Tag": [
                             {
                                 "Key": "tag_name",

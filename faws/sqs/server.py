@@ -10,6 +10,7 @@ from faws.sqs.actions.queue import (
     delete_queue,
     purge_queue,
     tag_queue,
+    list_queue_tags,
 )
 from faws.sqs.error import SQSError
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
@@ -68,6 +69,10 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
         if action == "TagQueue":
             return SuccessResult(
                 action, tag_queue(queues, **request_data), request_id
+            )
+        if action == "ListQueueTags":
+            return SuccessResult(
+                action, list_queue_tags(queues, **request_data), request_id
             )
         if action == "SendMessage":
             return SuccessResult(

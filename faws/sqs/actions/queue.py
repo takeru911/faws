@@ -38,21 +38,24 @@ def tag_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
     # そのため、まずはkwargsにあるTag.*をkvのdictにする
     # {"Tag.1.Key": "key_name", "Tag.1.Value": "value"...}
     tags = {k: v for k, v in kwargs.items() if "Tag" in k}
-    for tag_name, tag_value in tags.items():
-        queue.set_tag(Tag(tag_name, tag_value))
+    parsed_tags = _parse_tag_request_data(tags)
+    for tag in parsed_tags:
+        queue.set_tag(tag)
 
 
-def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> List[Dict]:
+def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> Dict:
     queue_name = name_from_url(queue_url=QueueUrl)
     queue = queues.get_queue(queue_name)
     tags = queue.list_tags()
 
-    return [
-        {"Key": tag.name, "Value": tag.value} for tag in tags
-    ]
+    return {
+        "Tag": [
+            {"Key": tag.name, "Value": tag.value} for tag in tags
+        ]
+    }
 
 
-def _parse_tag_request_data(request_tags: Dict) -> List[Dict]:
+def _parse_tag_request_data(request_tags: Dict) -> List[Tag]:
     tags = []
     # tagのrequest dataはTag.1.Key: "key_name", Tag.1.Value: "value"
     # そのため、要素数を2で割りtagの数を取り出す
@@ -60,6 +63,6 @@ def _parse_tag_request_data(request_tags: Dict) -> List[Dict]:
         tag_name = request_tags[f"Tag.{i}.Key"]
         tag_value = request_tags[f"Tag.{i}.Value"]
         tags.append(
-            {tag_name: tag_value}
+            Tag(tag_name, tag_value)
         )
     return tags
