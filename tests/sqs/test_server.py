@@ -42,7 +42,7 @@ def purge_queue(client, queue_url):
 
 
 def tag_queue(client, queue_url, tags: Dict):
-    data = f"Action=QueueTag&QueueUrl={queue_url}"
+    data = f"Action=TagQueue&QueueUrl={queue_url}"
     tag_data = "&".join(
         [f"{k}={v}" for k, v in tags.items()]
     )
