@@ -95,6 +95,4 @@ def test_list_tags():
     tag = Tag("key", "value")
     queue.set_tag(tag)
 
-    assert queue.list_tags() == [
-        tag
-    ]
+    assert queue.list_tags() == [tag]

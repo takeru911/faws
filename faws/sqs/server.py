@@ -67,9 +67,7 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
                 action, purge_queue(queues, **request_data), request_id
             )
         if action == "TagQueue":
-            return SuccessResult(
-                action, tag_queue(queues, **request_data), request_id
-            )
+            return SuccessResult(action, tag_queue(queues, **request_data), request_id)
         if action == "ListQueueTags":
             return SuccessResult(
                 action, list_queue_tags(queues, **request_data), request_id

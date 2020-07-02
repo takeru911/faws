@@ -48,11 +48,7 @@ def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> Dict:
     queue = queues.get_queue(queue_name)
     tags = queue.list_tags()
 
-    return {
-        "Tag": [
-            {"Key": tag.name, "Value": tag.value} for tag in tags
-        ]
-    }
+    return {"Tag": [{"Key": tag.name, "Value": tag.value} for tag in tags]}
 
 
 def _parse_tag_request_data(request_tags: Dict) -> List[Tag]:
@@ -62,7 +58,5 @@ def _parse_tag_request_data(request_tags: Dict) -> List[Tag]:
     for i in range(1, int(len(request_tags) / 2) + 1):
         tag_name = request_tags[f"Tag.{i}.Key"]
         tag_value = request_tags[f"Tag.{i}.Value"]
-        tags.append(
-            Tag(tag_name, tag_value)
-        )
+        tags.append(Tag(tag_name, tag_value))
     return tags
