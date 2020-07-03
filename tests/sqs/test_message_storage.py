@@ -8,7 +8,7 @@ from faws.sqs.message_storage import (
 )
 
 
-class InMemoryMessageStorageTest:
+class TestInMemoryMessageStorage:
     @pytest.fixture
     def in_memory_messages(self) -> MessageStorage:
         s = InMemoryMessageStorage()
@@ -24,7 +24,7 @@ class InMemoryMessageStorageTest:
     def test_get_messages(
         self, in_memory_messages: MessageStorage, limit: int, offset: int
     ):
-        messages = in_memory_messages.get_messages(limit, offset)
+        messages = in_memory_messages.get_messages(limit, offset).__next__()
         actual_message_ids = ",".join([message.message_body for message in messages])
         expected = ",".join(str(i) for i in list(range(offset, limit)))
 
@@ -34,7 +34,8 @@ class InMemoryMessageStorageTest:
         message = Message("test")
         in_memory_messages.add_message(message)
         messages = in_memory_messages.get_messages(200)
-        assert message in messages
+
+        assert message in messages.__next__()
 
     def test_truncate_messages(self, in_memory_messages: MessageStorage):
         in_memory_messages.truncate_messages()

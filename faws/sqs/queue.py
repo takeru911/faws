@@ -59,9 +59,8 @@ class Queue:
 
     def get_message(self, visibility_timeout: int = None, max_number_of_messages: int = 1) -> List[Message]:
         receive_messages = []
-        for messages in self._messages.get_messages():
-            print(messages)
-            for message in messages:
+        for message_generator in self._messages.get_messages():
+            for message in message_generator:
                 if message.is_callable():
                     if visibility_timeout is None:
                         message.update_deliverable_time(self.default_visibility_timeout)
