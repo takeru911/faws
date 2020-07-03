@@ -31,36 +31,40 @@ def send_message(
 
 
 def receive_message(
-    queues: QueueStorage, QueueUrl: str, VisibilityTimeout: str = None, **kwargs
+    queues: QueueStorage, QueueUrl: str, VisibilityTimeout: str = None, MaxNumberOfMessages: str = None,**kwargs
 ) -> Dict:
     queue_name = name_from_url(QueueUrl)
+    queue = queues.get_queue(queue_name)
     message_attribute_names = {
         k: v for k, v in kwargs.items() if "MessageAttribute" in k
     }
-    queue = queues.get_queue(queue_name)
-
-    message = queue.get_message(
-        int(VisibilityTimeout) if VisibilityTimeout is not None else None
+    messages = queue.get_message(
+        visibility_timeout=int(VisibilityTimeout) if VisibilityTimeout is not None else None,
+        max_number_of_messages=int(MaxNumberOfMessages) if MaxNumberOfMessages is not None else 1
     )
-    if not message:
+    if not messages:
         return {}
-    result_data = {
-        "Message": {
-            "MessageId": message[0].message_id,
+
+    message_data_list = []
+    for message in messages:
+        message_data = {
+            "MessageId": message.message_id,
             "ReceiptHandle": "barbar",
             "MD5OFBody": "hogehoge",
-            "Body": message[0].message_body,
+            "Body": message.message_body,
         }
+
+        if len(message_attribute_names) == 0:
+            message_data_list.append(message_data)
+            continue
+        message_data["MessageAttribute"] = _select_message_attribute(
+            message.message_attributes, list(message_attribute_names.values())
+        )
+        message_data_list.append(message_data)
+
+    return {
+        "Message": message_data_list
     }
-
-    if len(message_attribute_names) == 0:
-        return result_data
-
-    result_data["Message"]["MessageAttribute"] = _select_message_attribute(
-        message[0].message_attributes, list(message_attribute_names.values())
-    )
-
-    return result_data
 
 
 def _select_message_attribute(
