@@ -61,14 +61,18 @@ def send_message(client, queue_url, message, message_attributes=None, delay_seco
     return client.post("/", data=data + "&" + message_attributes_data)
 
 
-def receive_message(client, queue_url, message_attribute_names=None):
+def receive_message(
+    client, queue_url, message_attribute_names=None, num_of_message=None
+):
     data = f"Action=ReceiveMessage&QueueUrl={queue_url}"
-    if message_attribute_names is None:
-        return client.post("/", data=data)
-    message_attribute_response_data = "&".join(
-        [f"{k}={v}" for k, v in message_attribute_names.items()]
-    )
-    return client.post("/", data=data + "&" + message_attribute_response_data)
+    if message_attribute_names is not None:
+        message_attribute_response_data = "&".join(
+            [f"{k}={v}" for k, v in message_attribute_names.items()]
+        )
+        data = data + "&" + message_attribute_response_data
+    if num_of_message is not None:
+        data = data + "&" + f"MaxNumberOfMessages={num_of_message}"
+    return client.post("/", data=data)
 
 
 def test_parse_request_data():
@@ -307,6 +311,42 @@ def test_send_message_with_attribute(client):
                         "MD5OfMessageBody": "hogehoge",
                         "MD5OfMessageAttributes": "hugahuga",
                         "MessageId": "1111",
+                    },
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+
+@pytest.mark.parametrize("num_of_message", [2, 10])
+def test_do_receive_message(client, num_of_message):
+    create_queue(client, "test_receive_queue")
+    with mock.patch(
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ), mock.patch("faws.sqs.message.generate_uuid") as generate_uuid:
+        queue_url = "http://localhost:5000/queues/test_receive_queue"
+        for i in range(num_of_message):
+            generate_uuid.return_value = str(i)
+            send_message(client, queue_url, "test")
+        assert receive_message(
+            client,
+            "http://localhost:5000/queues/test_receive_queue",
+            num_of_message=num_of_message,
+        ).data == dict2xml_bytes(
+            {
+                "ReceiveMessageResponse": {
+                    "ReceiveMessageResult": {
+                        "Message": [
+                            {
+                                "MessageId": f"{i}",
+                                "ReceiptHandle": "barbar",
+                                "MD5OFBody": "hogehoge",
+                                "Body": "test",
+                            }
+                            for i in range(num_of_message)
+                        ]
                     },
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
