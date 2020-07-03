@@ -57,7 +57,9 @@ class Queue:
 
         return self._messages.add_message(message)
 
-    def get_message(self, visibility_timeout: int = None, max_number_of_messages: int = 1) -> List[Message]:
+    def get_message(
+        self, visibility_timeout: int = None, max_number_of_messages: int = 1
+    ) -> List[Message]:
         receive_messages = []
         for message_generator in self._messages.get_messages():
             for message in message_generator:

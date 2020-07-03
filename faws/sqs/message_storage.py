@@ -14,7 +14,9 @@ def build_message_storage(
 
 class MessageStorage:
     @abstractmethod
-    def get_messages(self, limit: int = 30, offset: int = 0) -> Generator[List[Message]]:
+    def get_messages(
+        self, limit: int = 30, offset: int = 0
+    ) -> Generator[List[Message]]:
         raise NotImplementedError
 
     @abstractmethod
@@ -30,10 +32,12 @@ class InMemoryMessageStorage(MessageStorage):
     def __init__(self, **kwargs):
         self._messages = OrderedDict()
 
-    def get_messages(self, limit: int = 30, offset: int = 0) -> Generator[List[Message]]:
+    def get_messages(
+        self, limit: int = 30, offset: int = 0
+    ) -> Generator[List[Message]]:
         messages = list(self._messages.values())
         for i in range(offset, len(self._messages), limit):
-            yield messages[offset + i:limit + i]
+            yield messages[offset + i : limit + i]
 
     def add_message(self, message: Message):
         self._messages[message.message_id] = message

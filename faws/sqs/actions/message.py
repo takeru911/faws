@@ -31,7 +31,11 @@ def send_message(
 
 
 def receive_message(
-    queues: QueueStorage, QueueUrl: str, VisibilityTimeout: str = None, MaxNumberOfMessages: str = None,**kwargs
+    queues: QueueStorage,
+    QueueUrl: str,
+    VisibilityTimeout: str = None,
+    MaxNumberOfMessages: str = None,
+    **kwargs
 ) -> Dict:
     queue_name = name_from_url(QueueUrl)
     queue = queues.get_queue(queue_name)
@@ -39,8 +43,12 @@ def receive_message(
         k: v for k, v in kwargs.items() if "MessageAttribute" in k
     }
     messages = queue.get_message(
-        visibility_timeout=int(VisibilityTimeout) if VisibilityTimeout is not None else None,
-        max_number_of_messages=int(MaxNumberOfMessages) if MaxNumberOfMessages is not None else 1
+        visibility_timeout=int(VisibilityTimeout)
+        if VisibilityTimeout is not None
+        else None,
+        max_number_of_messages=int(MaxNumberOfMessages)
+        if MaxNumberOfMessages is not None
+        else 1,
     )
     if not messages:
         return {}
@@ -62,9 +70,7 @@ def receive_message(
         )
         message_data_list.append(message_data)
 
-    return {
-        "Message": message_data_list
-    }
+    return {"Message": message_data_list}
 
 
 def _select_message_attribute(
