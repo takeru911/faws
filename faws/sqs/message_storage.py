@@ -33,7 +33,7 @@ class InMemoryMessageStorage(MessageStorage):
     def get_messages(self, limit: int = 30, offset: int = 0) -> Generator[List[Message]]:
         messages = list(self._messages.values())
         for i in range(offset, len(self._messages), limit):
-            yield messages[offset + i:limit]
+            yield messages[offset + i:limit + i]
 
     def add_message(self, message: Message):
         self._messages[message.message_id] = message

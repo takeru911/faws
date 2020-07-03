@@ -27,22 +27,28 @@ def test_add_message(dt, delay_seconds):
 
 
 @pytest.mark.parametrize(
-    "visibility_timeout,deliverable_second", [(0, 0), (None, 30), (45, 45)]
+    "visibility_timeout,deliverable_second,num_of_message", [(0, 0, 1), (None, 30, 5), (45, 45, 100)]
 )
-def test_get_message(visibility_timeout, deliverable_second):
+def test_get_message(visibility_timeout, deliverable_second, num_of_message):
     queue = Queue("test-queue")
     now = datetime(2020, 5, 1, 0, 0, 0)
-    with mock.patch("uuid.uuid4", return_value="1111"), mock.patch(
-        "datetime.datetime"
-    ) as dt:
+    with mock.patch("datetime.datetime") as dt:
         dt.now.return_value = now
-        message = queue.add_message("takerun")
-
-        assert queue.get_message(
-            visibility_timeout
-        ) == [message] and message.message_deliverable_time == datetime(
-            2020, 5, 1, 0, 0, deliverable_second
+        added_message = []
+        for i in range(num_of_message):
+            message = queue.add_message("takerun")
+            added_message.append(message)
+        received_message = queue.get_message(
+            visibility_timeout, max_number_of_messages=num_of_message
         )
+
+        assert received_message == added_message and len(
+            # deliverable timeが正常な値を持たないmessageを抽出し、0件であることをチェック
+            [
+                message for message in added_message
+                if message.message_deliverable_time != datetime(2020, 5, 1, 0, 0, deliverable_second)
+             ]
+        ) == 0
 
 
 def test_get_message_exist_uncallable_message():
