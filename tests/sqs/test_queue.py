@@ -40,7 +40,7 @@ def test_get_message(visibility_timeout, deliverable_second):
 
         assert queue.get_message(
             visibility_timeout
-        ) == message and message.message_deliverable_time == datetime(
+        ) == [message] and message.message_deliverable_time == datetime(
             2020, 5, 1, 0, 0, deliverable_second
         )
 
@@ -50,7 +50,7 @@ def test_get_message_exist_uncallable_message():
 
     with mock.patch("faws.sqs.message.Message.is_callable", return_value=False):
         queue.add_message("takerun")
-        assert queue.get_message() is None
+        assert queue.get_message() == []
 
 
 @pytest.mark.parametrize(
@@ -79,7 +79,7 @@ def test_purge_message():
     queue = Queue("test-queue")
     queue.add_message("hoge")
     queue.purge_message()
-    assert queue.get_message() is None
+    assert queue.get_message() == []
 
 
 def test_set_tag():

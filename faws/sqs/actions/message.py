@@ -42,14 +42,14 @@ def receive_message(
     message = queue.get_message(
         int(VisibilityTimeout) if VisibilityTimeout is not None else None
     )
-    if message is None:
+    if not message:
         return {}
     result_data = {
         "Message": {
-            "MessageId": message.message_id,
+            "MessageId": message[0].message_id,
             "ReceiptHandle": "barbar",
             "MD5OFBody": "hogehoge",
-            "Body": message.message_body,
+            "Body": message[0].message_body,
         }
     }
 
@@ -57,7 +57,7 @@ def receive_message(
         return result_data
 
     result_data["Message"]["MessageAttribute"] = _select_message_attribute(
-        message.message_attributes, list(message_attribute_names.values())
+        message[0].message_attributes, list(message_attribute_names.values())
     )
 
     return result_data

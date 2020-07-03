@@ -57,16 +57,19 @@ class Queue:
 
         return self._messages.add_message(message)
 
-    def get_message(self, max_number_of_messages: int = 1, visibility_timeout: int = None) -> List[Message]:
+    def get_message(self, visibility_timeout: int = None, max_number_of_messages: int = 1) -> List[Message]:
         receive_messages = []
-        for message in self._messages.get_messages():
-            if message.is_callable():
-                if visibility_timeout is None:
-                    message.update_deliverable_time(self.default_visibility_timeout)
-                message.update_deliverable_time(visibility_timeout)
-                receive_messages.append(message)
-            if len(receive_messages) == max_number_of_messages:
-                return receive_messages
+        for messages in self._messages.get_messages():
+            print(messages)
+            for message in messages:
+                if message.is_callable():
+                    if visibility_timeout is None:
+                        message.update_deliverable_time(self.default_visibility_timeout)
+                    else:
+                        message.update_deliverable_time(visibility_timeout)
+                    receive_messages.append(message)
+                if len(receive_messages) == max_number_of_messages:
+                    return receive_messages
         return receive_messages
 
     def purge_message(self):
