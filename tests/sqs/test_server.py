@@ -1,7 +1,7 @@
 import datetime
 import pytest
 from unittest import mock
-from typing import Dict
+from typing import Dict, List
 from dict2xml import dict2xml
 from faws.sqs import server
 from faws.sqs.queue_storage import QueuesStorageType
@@ -49,6 +49,12 @@ def tag_queue(client, queue_url, tags: Dict):
 
 def list_queue_tags(client, queue_url):
     return client.post("/", data=f"Action=ListQueueTags&QueueUrl={queue_url}")
+
+
+def untag_queue(client, queue_url: str, tag_names: List[str]):
+    data = f"Action=UnTagQueue&QueueUrl={queue_url}"
+    untag_data = "&".join([f"TagKey.{i}={v}" for i, v in enumerate(tag_names, 1)])
+    return client.post("/", data=data + "&" + untag_data)
 
 
 def send_message(client, queue_url, message, message_attributes=None, delay_seconds=0):
@@ -248,7 +254,7 @@ def test_do_list_queue(client):
         },
     )
     with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
-        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+            "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
     ):
         assert list_queue_tags(client, queue_url).data == dict2xml_bytes(
             {
@@ -258,6 +264,57 @@ def test_do_list_queue(client):
                             {"Key": "tag_name", "Value": "tag_value"},
                             {"Key": "tag_name_2", "Value": "tag_value_2"},
                         ]
+                    },
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+
+@pytest.mark.parametrize("untags, exist_tags", [
+    (["tag_name"], [
+        {"Key": "tag_name_2", "Value": "tag_value_2"},
+    ]),
+    (["tag_name", "tag_name_2"], []),
+    (["tag_name_3"], [
+        {"Key": "tag_name", "Value": "tag_value"},
+        {"Key": "tag_name_2", "Value": "tag_value_2"},
+    ])
+])
+def test_do_untag_queue(client, untags, exist_tags):
+    create_queue(client, "test_queue_1")
+    queue_url = "http://localhost/quueus/test_queue_1"
+    tag_queue(
+        client,
+        queue_url,
+        tags={
+            "Tag.1.Key": "tag_name",
+            "Tag.1.Value": "tag_value",
+            "Tag.2.Key": "tag_name_2",
+            "Tag.2.Value": "tag_value_2",
+        },
+    )
+    with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
+            "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+    ):
+
+        assert untag_queue(client, queue_url, untags).data == dict2xml_bytes(
+            {
+                "UnTagQueueResponse": {
+                    "ResponseMetadata": {
+                        "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
+                    },
+                }
+            }
+        )
+
+        assert list_queue_tags(client, queue_url).data == dict2xml_bytes(
+            {
+                "ListQueueTagsResponse": {
+                    "ListQueueTagsResult": {
+                        "Tag": exist_tags
                     },
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
