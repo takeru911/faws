@@ -47,8 +47,17 @@ def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> Dict:
     queue_name = name_from_url(queue_url=QueueUrl)
     queue = queues.get_queue(queue_name)
     tags = queue.list_tags()
-
+    if len(tags) == 0:
+        return {}
     return {"Tag": [{"Key": tag.name, "Value": tag.value} for tag in tags]}
+
+
+def untag_queue(queues: QueueStorage, QueueUrl: str, **kwargs):
+    queue_name = name_from_url(queue_url=QueueUrl)
+    queue = queues.get_queue(queue_name)
+    tag_names = [v for k, v in kwargs.items() if "Tag" in k]
+    for tag_name in tag_names:
+        queue.un_tag(tag_name)
 
 
 def _parse_tag_request_data(request_tags: Dict) -> List[Tag]:

@@ -79,6 +79,11 @@ class Queue:
     def set_tag(self, tag: Tag):
         self._tags[tag.name] = tag
 
+    def un_tag(self, tag_name: str):
+        if tag_name not in self._tags:
+            return
+        del self._tags[tag_name]
+
     def list_tags(self) -> List[Tag]:
         return list(self._tags.values())
 

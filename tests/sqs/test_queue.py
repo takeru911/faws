@@ -103,6 +103,20 @@ def test_set_tag():
     assert queue._tags == {tag.name: tag}
 
 
+@pytest.mark.parametrize(
+    "tags,untags,queue_tag",
+    [(["tag"], ["tag"], []), (["tag"], ["untag"], ["tag"]), ([], ["tag"], [])],
+)
+def test_un_tag(tags, untags, queue_tag):
+    queue = Queue("test-queue")
+    for tag in tags:
+        t = Tag(tag, "value")
+        queue.set_tag(t)
+    for untag in untags:
+        queue.un_tag(untag)
+    assert [t.name for t in queue._tags.values()] == queue_tag
+
+
 def test_list_tags():
     queue = Queue("test-queue")
     tag = Tag("key", "value")
