@@ -242,40 +242,38 @@ def test_do_tag_queue(client):
         )
 
 
-@pytest.mark.parametrize("request_tags,response_tags", [
-    (
-        {
-            "Tag.1.Key": "tag_name",
-            "Tag.1.Value": "tag_value",
-            "Tag.2.Key": "tag_name_2",
-            "Tag.2.Value": "tag_value_2",
-        },
-        [
-            {"Key": "tag_name", "Value": "tag_value"},
-            {"Key": "tag_name_2", "Value": "tag_value_2"},
-        ]
-    ),
-    (
-        None,
-        {}
-    )
-])
+@pytest.mark.parametrize(
+    "request_tags,response_tags",
+    [
+        (
+            {
+                "Tag.1.Key": "tag_name",
+                "Tag.1.Value": "tag_value",
+                "Tag.2.Key": "tag_name_2",
+                "Tag.2.Value": "tag_value_2",
+            },
+            [
+                {"Key": "tag_name", "Value": "tag_value"},
+                {"Key": "tag_name_2", "Value": "tag_value_2"},
+            ],
+        ),
+        (None, {}),
+    ],
+)
 def test_do_list_queue(client, request_tags, response_tags):
     create_queue(client, "test_queue_1")
     queue_url = "http://localhost/quueus/test_queue_1"
     tag_queue(
-        client,
-        queue_url,
-        tags=request_tags,
+        client, queue_url, tags=request_tags,
     )
     with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
-            "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
     ):
         expected_response = {
             "ListQueueTagsResponse": {
-                "ListQueueTagsResult": {
-                    "Tag": response_tags
-                } if response_tags != {} else {},
+                "ListQueueTagsResult": {"Tag": response_tags}
+                if response_tags != {}
+                else {},
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                 },
@@ -286,16 +284,20 @@ def test_do_list_queue(client, request_tags, response_tags):
         )
 
 
-@pytest.mark.parametrize("untags, exist_tags", [
-    (["tag_name"], [
-        {"Key": "tag_name_2", "Value": "tag_value_2"},
-    ]),
-    (["tag_name", "tag_name_2"], {}),
-    (["tag_name_3"], [
-        {"Key": "tag_name", "Value": "tag_value"},
-        {"Key": "tag_name_2", "Value": "tag_value_2"},
-    ])
-])
+@pytest.mark.parametrize(
+    "untags, exist_tags",
+    [
+        (["tag_name"], [{"Key": "tag_name_2", "Value": "tag_value_2"},]),
+        (["tag_name", "tag_name_2"], {}),
+        (
+            ["tag_name_3"],
+            [
+                {"Key": "tag_name", "Value": "tag_value"},
+                {"Key": "tag_name_2", "Value": "tag_value_2"},
+            ],
+        ),
+    ],
+)
 def test_do_untag_queue(client, untags, exist_tags):
     create_queue(client, "test_queue_1")
     queue_url = "http://localhost/quueus/test_queue_1"
@@ -310,7 +312,7 @@ def test_do_untag_queue(client, untags, exist_tags):
         },
     )
     with mock.patch("faws.sqs.message.generate_uuid", return_value="1111"), mock.patch(
-            "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
+        "uuid.uuid4", return_value="725275ae-0b9b-4762-b238-436d7c65a1ac"
     ):
         assert untag_queue(client, queue_url, untags).data == dict2xml_bytes(
             {
@@ -323,9 +325,7 @@ def test_do_untag_queue(client, untags, exist_tags):
         )
         expected_response = {
             "ListQueueTagsResponse": {
-                "ListQueueTagsResult": {
-                    "Tag": exist_tags
-                } if exist_tags != {} else {},
+                "ListQueueTagsResult": {"Tag": exist_tags} if exist_tags != {} else {},
                 "ResponseMetadata": {
                     "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                 },

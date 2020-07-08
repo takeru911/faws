@@ -11,7 +11,7 @@ from faws.sqs.actions.queue import (
     purge_queue,
     tag_queue,
     list_queue_tags,
-    untag_queue
+    untag_queue,
 )
 from faws.sqs.error import SQSError
 from faws.sqs.queue_storage import build_queues_storage, QueuesStorageType
