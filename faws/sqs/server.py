@@ -73,7 +73,7 @@ def do_operation(request_data: Dict, request_id: str) -> Result:
             return SuccessResult(
                 action, list_queue_tags(queues, **request_data), request_id
             )
-        if action == "UnTagQueue":
+        if action == "UntagQueue":
             return SuccessResult(
                 action, untag_queue(queues, **request_data), request_id
             )

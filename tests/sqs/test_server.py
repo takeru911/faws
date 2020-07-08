@@ -52,7 +52,7 @@ def list_queue_tags(client, queue_url):
 
 
 def untag_queue(client, queue_url: str, tag_names: List[str]):
-    data = f"Action=UnTagQueue&QueueUrl={queue_url}"
+    data = f"Action=UntagQueue&QueueUrl={queue_url}"
     untag_data = "&".join([f"TagKey.{i}={v}" for i, v in enumerate(tag_names, 1)])
     return client.post("/", data=data + "&" + untag_data)
 
@@ -302,7 +302,7 @@ def test_do_untag_queue(client, untags, exist_tags):
 
         assert untag_queue(client, queue_url, untags).data == dict2xml_bytes(
             {
-                "UnTagQueueResponse": {
+                "UntagQueueResponse": {
                     "ResponseMetadata": {
                         "RequestId": "725275ae-0b9b-4762-b238-436d7c65a1ac"
                     },
