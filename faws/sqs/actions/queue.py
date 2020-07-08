@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 from faws.sqs.queue import name_from_url, Tag
 from faws.sqs.queue_storage import QueueStorage
 
