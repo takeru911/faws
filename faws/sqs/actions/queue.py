@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from faws.sqs.queue import name_from_url, Tag
 from faws.sqs.queue_storage import QueueStorage
 
@@ -47,7 +47,8 @@ def list_queue_tags(queues: QueueStorage, QueueUrl: str, **kwargs) -> Dict:
     queue_name = name_from_url(queue_url=QueueUrl)
     queue = queues.get_queue(queue_name)
     tags = queue.list_tags()
-
+    if len(tags) == 0:
+        return {}
     return {"Tag": [{"Key": tag.name, "Value": tag.value} for tag in tags]}
 
 
